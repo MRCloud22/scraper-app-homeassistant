@@ -34,8 +34,13 @@ async function sync() {
 
             // 2. Build for static export
             console.log('Step 2: Building for static export...');
-            process.env.NEXT_PUBLIC_EXPORT = 'true';
-            execSync('npm run build', { stdio: 'inherit' });
+            // Ensure no basePath is used for root hosting
+            const buildEnv = {
+                ...process.env,
+                NEXT_PUBLIC_EXPORT: 'true',
+                NEXT_PUBLIC_BASE_PATH: ''
+            };
+            execSync('npm run build', { stdio: 'inherit', env: buildEnv });
 
             // 3. FTP Upload
             console.log('Step 3: Uploading to FTP...');

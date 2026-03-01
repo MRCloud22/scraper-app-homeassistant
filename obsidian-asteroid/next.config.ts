@@ -5,14 +5,14 @@ const isGithubPages = process.env.NEXT_PUBLIC_EXPORT === 'true';
 const nextConfig: NextConfig = {
   // Use static export only when building for production/IONOS
   output: isGithubPages ? 'export' : undefined,
-  // GitHub Pages hosting happens under /repo-name/
-  basePath: isGithubPages ? '/scraper-app' : '',
-  assetPrefix: isGithubPages ? '/scraper-app/' : '',
+  // basePath is now dynamic based on the environment variable
+  basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
+  assetPrefix: process.env.NEXT_PUBLIC_BASE_PATH ? `${process.env.NEXT_PUBLIC_BASE_PATH}/` : '',
   images: {
     unoptimized: true,
   },
   env: {
-    NEXT_PUBLIC_BASE_PATH: isGithubPages ? '/scraper-app' : '',
+    NEXT_PUBLIC_BASE_PATH: process.env.NEXT_PUBLIC_BASE_PATH || '',
   },
 };
 
