@@ -1,0 +1,458 @@
+.container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0a1628 0%, #1a2a4a 30%, #0f2027 70%, #0a1628 100%);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding: 2rem 3rem;
+}
+
+/* Animated background orbs */
+.backgroundOrbs {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.orb1,
+.orb2,
+.orb3 {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.4;
+    animation: float 20s ease-in-out infinite;
+}
+
+.orb1 {
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(56, 178, 172, 0.3) 0%, transparent 70%);
+    top: -200px;
+    right: -100px;
+    animation-delay: 0s;
+}
+
+.orb2 {
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(212, 167, 106, 0.25) 0%, transparent 70%);
+    bottom: -150px;
+    left: -100px;
+    animation-delay: -7s;
+}
+
+.orb3 {
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(129, 178, 154, 0.25) 0%, transparent 70%);
+    top: 40%;
+    left: 30%;
+    animation-delay: -14s;
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translate(0, 0) scale(1);
+    }
+
+    25% {
+        transform: translate(30px, -30px) scale(1.05);
+    }
+
+    50% {
+        transform: translate(-20px, 20px) scale(0.95);
+    }
+
+    75% {
+        transform: translate(-30px, -20px) scale(1.02);
+    }
+}
+
+/* Header */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.logoSection {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.logoIcon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, rgba(56, 178, 172, 0.2) 0%, rgba(56, 178, 172, 0.05) 100%);
+    border: 1px solid rgba(56, 178, 172, 0.3);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #4fd1c5;
+}
+
+.logoText h1 {
+    font-size: 2.5rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, #ffffff 0%, #e8c591 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0;
+}
+
+.logoText p {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0;
+    font-weight: 300;
+    letter-spacing: 2px;
+}
+
+.clockSection {
+    text-align: right;
+}
+
+.time {
+    font-size: 4rem;
+    font-weight: 300;
+    color: #ffffff;
+    line-height: 1;
+    letter-spacing: 2px;
+}
+
+.date {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin-top: 0.5rem;
+    text-transform: capitalize;
+}
+
+/* Main content */
+.main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 1;
+    padding: 2rem 0;
+}
+
+.titleSection {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.titleSection h2 {
+    font-size: 2.25rem;
+    font-weight: 500;
+    color: #ffffff;
+    margin: 0;
+}
+
+.titleIcon {
+    color: #81b29a;
+    opacity: 0.7;
+}
+
+.subtitle {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 1.15rem;
+    font-weight: 300;
+    margin-bottom: 2.5rem;
+}
+
+/* Appointments Grid */
+.appointmentsGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    flex: 1;
+}
+
+@media (max-width: 1400px) {
+    .appointmentsGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Appointment Card */
+.appointmentCard {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    position: relative;
+    overflow: hidden;
+    animation: fadeInScale 0.6s ease-out forwards;
+    opacity: 0;
+    backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: row;
+}
+
+.appointmentCard:hover {
+    border-color: rgba(212, 167, 106, 0.3);
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* Card Image */
+.cardImage {
+    width: 140px;
+    min-width: 140px;
+    height: 100%;
+    min-height: 140px;
+    position: relative;
+    overflow: hidden;
+}
+
+.cardImage img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.cardImage::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 30px;
+    background: linear-gradient(to right, transparent, rgba(15, 32, 39, 0.8));
+}
+
+.cardAccent {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #d4a76a, #e8c591, #d4a76a);
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+
+    0%,
+    100% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+}
+
+.cardContent {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.treatmentName {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 1rem;
+    line-height: 1.3;
+}
+
+.appointmentDetails {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.timeSlot,
+.priceSlot {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.timeLabel,
+.priceLabel {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.timeValue {
+    font-size: 1.75rem;
+    font-weight: 500;
+    color: #4fd1c5;
+}
+
+.priceValue {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: #e8c591;
+}
+
+.divider {
+    width: 1px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 2rem;
+}
+
+.paginationDot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.paginationDot.active {
+    background: #d4a76a;
+    transform: scale(1.2);
+    box-shadow: 0 0 15px rgba(212, 167, 106, 0.5);
+}
+
+/* Empty state */
+.emptyState {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.emptyState svg {
+    color: #d4a76a;
+    opacity: 0.5;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.spinning {
+    animation: spin 2s linear infinite !important;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 0.5;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.8;
+        transform: scale(1.05);
+    }
+}
+
+.emptyState p {
+    font-size: 1.5rem;
+    font-weight: 300;
+}
+
+/* Footer */
+.footer {
+    position: relative;
+    z-index: 1;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.footerContent {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 1.25rem;
+    font-weight: 300;
+}
+
+.footerContent svg {
+    color: #d4a76a;
+    opacity: 0.6;
+}
+
+/* Full-screen mode optimizations */
+@media (min-width: 1920px) {
+    .container {
+        padding: 3rem 5rem;
+    }
+
+    .logoText h1 {
+        font-size: 3rem;
+    }
+
+    .time {
+        font-size: 5rem;
+    }
+
+    .titleSection h2 {
+        font-size: 2.75rem;
+    }
+
+    .treatmentName {
+        font-size: 1.6rem;
+    }
+
+    .timeValue {
+        font-size: 2rem;
+    }
+
+    .priceValue {
+        font-size: 1.75rem;
+    }
+}
