@@ -6,5 +6,8 @@ bashio::log.info "NPM version: $(npm --version)"
 
 cd /app
 
+bashio::log.info "Launching background sync service..."
+node /app/scripts/ha-sync.js &
+
 bashio::log.info "Launching Next.js server on port 3000..."
 exec npm run start

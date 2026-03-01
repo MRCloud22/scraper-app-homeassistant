@@ -12,7 +12,21 @@ ports:
   3000/tcp: 3000
 ports_description:
   3000/tcp: "Web interface for the Next.js App"
-options: {}
-schema: {}
+options:
+  enable_ftp: false
+  ftp_server: ""
+  ftp_user: ""
+  ftp_password: ""
+  ftp_port: 21
+  ftp_remote_path: "/"
+  sync_interval: 60
+schema:
+  enable_ftp: bool
+  ftp_server: str
+  ftp_user: str?
+  ftp_password: password?
+  ftp_port: int(1,65535)
+  ftp_remote_path: str
+  sync_interval: int(5,1440)
 startup: "services"
 boot: "auto"
