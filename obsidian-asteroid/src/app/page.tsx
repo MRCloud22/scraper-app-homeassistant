@@ -41,21 +41,11 @@ export default function Home() {
     setError(null);
 
     try {
-      const isExport = process.env.NEXT_PUBLIC_EXPORT === 'true';
       const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
       const cacheBuster = `?t=${Date.now()}`;
-      let response;
 
-      if (isExport) {
-        // Direct fetch for static export (avoids 404 on API)
-        response = await fetch(`${basePath}/appointments.json${cacheBuster}`, { cache: 'no-store' });
-      } else {
-        // Try live API first locally
-        response = await fetch(`${basePath}/api/appointments${cacheBuster}`, { cache: 'no-store' });
-        if (!response.ok) {
-          response = await fetch(`${basePath}/appointments.json${cacheBuster}`, { cache: 'no-store' });
-        }
-      }
+      // Fetch from the static JSON file (updated by the background sync service)
+      const response = await fetch(`${basePath}/appointments.json${cacheBuster}`, { cache: 'no-store' });
 
       const data: ApiResponse = await response.json();
       console.log('Fetched data:', data);
