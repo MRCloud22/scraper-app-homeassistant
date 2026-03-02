@@ -35,7 +35,7 @@ export async function GET(
             return new NextResponse(fileBuffer, {
                 headers: {
                     'Content-Type': contentType,
-                    'Cache-Control': 'public, max-age=3600',
+                    'Cache-Control': 'no-cache, must-revalidate',
                 },
             });
         }

@@ -29,7 +29,7 @@ interface CustomSettings {
     theme?: string;
 }
 
-const VERSION = "0.4.27";
+const VERSION = "0.4.28";
 
 export default function Signage2Page() {
     const { settings } = useSettings();
@@ -138,11 +138,13 @@ export default function Signage2Page() {
     const isStatic = debugInfo?.mode?.startsWith('Static');
 
     // Dynamic assets — static uses relative path, HA uses relative API URL
+    // Cache-busting: append ?t= to image URLs so browser refetches on each settings poll
     const assetPath = isStatic ? 'media' : '../api/custom-media';
-    const logoSrc = customSettings.logo ? `${assetPath}/${customSettings.logo}` : null;
-    const heroSrc = customSettings.heroImage ? `${assetPath}/${customSettings.heroImage}` : null;
-    const qrSrc = customSettings.qrCode ? `${assetPath}/${customSettings.qrCode}` : null;
-    const bgUrl = customSettings.backgroundImage && customSettings.backgroundImage !== 'none' ? `url(${assetPath}/${customSettings.backgroundImage})` : 'none';
+    const cacheBust = `?t=${Math.floor(Date.now() / 60000)}`; // changes every minute
+    const logoSrc = customSettings.logo ? `${assetPath}/${customSettings.logo}${cacheBust}` : null;
+    const heroSrc = customSettings.heroImage ? `${assetPath}/${customSettings.heroImage}${cacheBust}` : null;
+    const qrSrc = customSettings.qrCode ? `${assetPath}/${customSettings.qrCode}${cacheBust}` : null;
+    const bgUrl = customSettings.backgroundImage && customSettings.backgroundImage !== 'none' ? `url(${assetPath}/${customSettings.backgroundImage}${cacheBust})` : 'none';
 
     return (
         <div

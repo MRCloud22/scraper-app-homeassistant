@@ -117,11 +117,20 @@ async function sync() {
                     let currentSettingsHash = '';
                     if (fs.existsSync(settingsFile)) {
                         const settingsContent = fs.readFileSync(settingsFile, 'utf8');
-                        // Simple hash: just use the content length + last 32 chars as a fingerprint
                         currentSettingsHash = settingsContent.length + '_' + settingsContent.slice(-32).replace(/\s/g, '');
                     }
 
-                    let lastSyncData = { timestamp: 0, version: '0.0.0', settingsHash: '' };
+                    // Media fingerprint: detect when any image has been replaced
+                    let currentMediaHash = '';
+                    if (fs.existsSync(mediaDir)) {
+                        const mediaFiles = fs.readdirSync(mediaDir).sort();
+                        currentMediaHash = mediaFiles.map(f => {
+                            const stat = fs.statSync(path.join(mediaDir, f));
+                            return `${f}:${stat.size}:${stat.mtimeMs}`;
+                        }).join('|');
+                    }
+
+                    let lastSyncData = { timestamp: 0, version: '0.0.0', settingsHash: '', mediaHash: '' };
                     if (fs.existsSync(lastSyncFile)) {
                         try {
                             lastSyncData = JSON.parse(fs.readFileSync(lastSyncFile, 'utf8'));
@@ -130,12 +139,17 @@ async function sync() {
 
                     const isVersionUpgrade = currentVersion !== lastSyncData.version;
                     const isSettingsChanged = currentSettingsHash !== lastSyncData.settingsHash;
+                    const isMediaChanged = currentMediaHash !== lastSyncData.mediaHash;
+                    const forceFullSync = isVersionUpgrade || isSettingsChanged || isMediaChanged;
 
                     if (isVersionUpgrade) {
                         console.log(`Version changed (${lastSyncData.version} -> ${currentVersion}). Forcing full sync.`);
                     }
                     if (isSettingsChanged && !isVersionUpgrade) {
                         console.log('settings.json changed. Forcing full sync.');
+                    }
+                    if (isMediaChanged && !isVersionUpgrade) {
+                        console.log('Media files changed. Forcing full sync.');
                     }
 
                     try {
@@ -162,8 +176,8 @@ async function sync() {
                                     await uploadChangedFiles(localPath, path.join(remoteDir, item));
                                     await client.cd('..');
                                 } else {
-                                    if (isVersionUpgrade || isSettingsChanged || stats.mtimeMs > lastSyncData.timestamp) {
-                                        console.log(`Uploading: ${item}${isVersionUpgrade ? ' (Force)' : ''}`);
+                                    if (forceFullSync || stats.mtimeMs > lastSyncData.timestamp) {
+                                        console.log(`Uploading: ${item}${forceFullSync ? ' (Force)' : ''}`);
                                         await client.uploadFrom(localPath, item);
                                     }
                                 }
@@ -175,7 +189,8 @@ async function sync() {
                         fs.writeFileSync(lastSyncFile, JSON.stringify({
                             timestamp: Date.now(),
                             version: currentVersion,
-                            settingsHash: currentSettingsHash
+                            settingsHash: currentSettingsHash,
+                            mediaHash: currentMediaHash
                         }));
                         console.log('FTP Upload successful!');
                     } catch (err) {
