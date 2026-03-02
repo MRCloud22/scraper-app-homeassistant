@@ -53,7 +53,7 @@ async function sync() {
             const scraperOutputFile = path.join(__dirname, '../public/appointments.json');
             const rssOutputFile = path.join(__dirname, '../public/rss.xml');
 
-            // Configuration source (prioritize /addon_config)
+            // Configuration source: check for the actual subdirectory, not just the parent
             const configBase = fs.existsSync('/addon_config/obsidian_asteroid') ? '/addon_config' : '/config';
             const settingsFile = path.join(configBase, 'obsidian_asteroid/settings.json');
             const mediaDir = path.join(configBase, 'obsidian_asteroid/media');
