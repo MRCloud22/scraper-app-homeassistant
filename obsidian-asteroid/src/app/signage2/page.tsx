@@ -14,10 +14,24 @@ interface Appointment {
     imageUrl: string | null;
 }
 
+interface CustomSettings {
+    logo?: string;
+    heroImage?: string;
+    qrCode?: string;
+    backgroundImage?: string;
+    title?: string;
+    subtitle?: string;
+    listTitle?: string;
+    emptyText?: string;
+    pillColor?: string;
+    qrLabel?: string;
+    qrUrl?: string;
+}
+
 export default function Signage2Page() {
     const { settings } = useSettings();
     const [appointments, setAppointments] = useState<Appointment[]>([]);
-    const [customSettings, setCustomSettings] = useState<any>({});
+    const [customSettings, setCustomSettings] = useState<CustomSettings>({});
     const [visibleStart, setVisibleStart] = useState(0);
     const [mounted, setMounted] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -72,7 +86,7 @@ export default function Signage2Page() {
 
         const rotateMs = settings.signageRotationInterval * 1000;
         const rotateTimer = setInterval(() => {
-            setVisibleStart((prev) => {
+            setVisibleStart((prev: number) => {
                 const next = prev + VISIBLE_COUNT;
                 return next >= appointments.length ? 0 : next;
             });
@@ -134,7 +148,7 @@ export default function Signage2Page() {
                     <div className={styles.emptyState}>{customSettings.emptyText || settings.emptyStateText || 'Aktuell sind keine freien Termine vorhanden.'}</div>
                 ) : (
                     <div className={styles.appointmentList}>
-                        {visibleAppointments.map((apt, index) => (
+                        {visibleAppointments.map((apt: Appointment, index: number) => (
                             <div
                                 key={`${apt.date}-${apt.time}-${index}`}
                                 className={styles.appointmentPill}
