@@ -29,7 +29,7 @@ interface CustomSettings {
     theme?: string;
 }
 
-const VERSION = "0.4.29";
+const VERSION = "0.4.30";
 
 export default function Signage2Page() {
     const { settings } = useSettings();
@@ -76,8 +76,13 @@ export default function Signage2Page() {
             // If the API returned HTML it's a redirect/404 — not our API
             if (apiRes.ok && !text.startsWith('<!DOCTYPE')) {
                 const data = JSON.parse(text);
-                setCustomSettings(data.signage2 || data);
-                setDebugInfo({ mode: 'Server (API)', foundPath: '../api/custom-settings' });
+                const { _debug, ...settings } = data;
+                setCustomSettings(settings.signage2 || settings);
+                setDebugInfo({
+                    mode: 'Server (API)',
+                    foundPath: _debug?.foundPath || '../api/custom-settings',
+                    keys: _debug?.keys
+                });
                 return;
             }
         } catch (_apiErr) {
@@ -232,17 +237,13 @@ export default function Signage2Page() {
                     </div>
                 </div>
             </footer>
-            {/* Version & Debug (Hidden by default, hover near bottom to see) */}
+            {/* Version & Debug */}
             <div className={styles.versionTag}>
-                v{VERSION} | Settings: {Object.keys(customSettings).length > 1 ? 'Loaded' : 'Empty/Default'} | Last: {lastFetch}
+                v{VERSION} | Keys: {Object.keys(customSettings).join(', ') || 'none'} | Last: {lastFetch}
                 <br />
-                {debugInfo ? (
-                    <span>
-                        Ping: {debugInfo.pingStatus || 'N/A'} |
-                        Path: {debugInfo.foundPath || 'NONE'} |
-                        Err: {debugInfo.error || debugInfo.listError || 'None'}
-                    </span>
-                ) : 'Connecting...'}
+                Title: "{customSettings.title || '(none)'}" | Mode: {debugInfo?.mode || '?'} | Path: {debugInfo?.foundPath || 'NONE'}
+                <br />
+                {debugInfo?.error ? `ERR: ${debugInfo.error}` : 'OK'}
             </div>
         </div>
     );

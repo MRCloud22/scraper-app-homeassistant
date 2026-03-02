@@ -13,18 +13,21 @@ export async function GET() {
         if (fs.existsSync(SETTINGS_PATH)) {
             const data = fs.readFileSync(SETTINGS_PATH, 'utf8');
             const parsed = JSON.parse(data);
-            return NextResponse.json(parsed);
+            // Return parsed settings + debug info so the UI knows what file was read
+            return NextResponse.json({
+                ...parsed,
+                _debug: { foundPath: SETTINGS_PATH, keys: Object.keys(parsed) }
+            });
         }
 
-        // Settings not yet created (first boot before run.sh finished)
         return NextResponse.json(
-            { error: 'Settings not found', path: SETTINGS_PATH },
+            { error: 'Settings not found', _debug: { checkedPath: SETTINGS_PATH } },
             { status: 404 }
         );
     } catch (err: any) {
         console.error('Error reading settings:', err);
         return NextResponse.json(
-            { error: err.message },
+            { error: err.message, _debug: { checkedPath: SETTINGS_PATH } },
             { status: 500 }
         );
     }
