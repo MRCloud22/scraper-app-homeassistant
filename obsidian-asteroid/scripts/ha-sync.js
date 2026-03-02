@@ -63,7 +63,7 @@ async function sync() {
             if (!fs.existsSync(STATIC_BUILD_DIR)) {
                 console.warn('Static build dir missing, skipping data injection.');
             } else {
-                // Copy scraper data into static build
+                // Copy scraper data into static build root
                 if (fs.existsSync(scraperOutputFile)) {
                     fs.copyFileSync(scraperOutputFile, path.join(STATIC_BUILD_DIR, 'appointments.json'));
                     console.log('Injected appointments.json into static build.');
@@ -73,28 +73,47 @@ async function sync() {
                     console.log('Injected rss.xml into static build.');
                 }
 
-                // Copy settings.json into static build
+                // Copy settings.json into static build root AND into signage2/ subfolder.
+                // Root:     used by new JS (fetch('../settings.json') from /signage2/)
+                // signage2: used by old JS (fetch('settings.json') from /signage2/)
                 if (fs.existsSync(settingsFile)) {
                     fs.copyFileSync(settingsFile, path.join(STATIC_BUILD_DIR, 'settings.json'));
-                    console.log('Injected settings.json into static build.');
+                    console.log('Injected settings.json into static build root.');
+
+                    const signage2Dir = path.join(STATIC_BUILD_DIR, 'signage2');
+                    if (fs.existsSync(signage2Dir)) {
+                        fs.copyFileSync(settingsFile, path.join(signage2Dir, 'settings.json'));
+                        console.log('Also injected settings.json into signage2/ subfolder.');
+                    }
                 } else {
                     console.warn(`settings.json not found at: ${settingsFile}`);
                 }
 
-                // Copy media files into static build
+                // Copy media files into static build root/media AND signage2/media.
+                // Root media:     used by new JS (fetch('../media/file.png') from /signage2/)
+                // signage2/media: used by old JS (fetch('media/file.png') from /signage2/)
                 if (fs.existsSync(mediaDir)) {
                     const staticMediaDir = path.join(STATIC_BUILD_DIR, 'media');
                     if (!fs.existsSync(staticMediaDir)) fs.mkdirSync(staticMediaDir, { recursive: true });
+
+                    const signage2Dir = path.join(STATIC_BUILD_DIR, 'signage2');
+                    const signage2MediaDir = path.join(signage2Dir, 'media');
+                    if (fs.existsSync(signage2Dir) && !fs.existsSync(signage2MediaDir)) {
+                        fs.mkdirSync(signage2MediaDir, { recursive: true });
+                    }
 
                     const mediaFiles = fs.readdirSync(mediaDir).filter(f => !fs.statSync(path.join(mediaDir, f)).isDirectory());
                     for (const file of mediaFiles) {
                         try {
                             fs.copyFileSync(path.join(mediaDir, file), path.join(staticMediaDir, file));
+                            if (fs.existsSync(signage2MediaDir)) {
+                                fs.copyFileSync(path.join(mediaDir, file), path.join(signage2MediaDir, file));
+                            }
                         } catch (e) {
                             console.error(`Failed to copy media file ${file}:`, e.message);
                         }
                     }
-                    console.log(`Injected ${mediaFiles.length} media files into static build.`);
+                    console.log(`Injected ${mediaFiles.length} media files into root/media and signage2/media.`);
                 } else {
                     console.warn(`Media directory not found at: ${mediaDir}`);
                 }
