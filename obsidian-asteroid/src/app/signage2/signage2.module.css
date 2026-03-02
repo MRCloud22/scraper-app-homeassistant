@@ -240,3 +240,27 @@
     padding: 10vh 0;
     font-weight: 600;
 }
+
+.darkTheme {
+    background-color: #1a1a1a !important;
+    color: #f4f1e9;
+}
+
+.darkTheme .logoText h1,
+.darkTheme .logoText p,
+.darkTheme .title {
+    color: #d7e4d9;
+}
+
+.darkTheme .appointmentPill {
+    background-color: #2d3430 !important;
+    color: #f4f1e9;
+}
+
+.darkTheme .time {
+    color: #e8f5e9;
+}
+
+.darkTheme .qrInfoText {
+    color: #d7e4d9;
+}

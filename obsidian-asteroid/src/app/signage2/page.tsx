@@ -26,6 +26,7 @@ interface CustomSettings {
     pillColor?: string;
     qrLabel?: string;
     qrUrl?: string;
+    theme?: string;
 }
 
 export default function Signage2Page() {
@@ -111,7 +112,10 @@ export default function Signage2Page() {
     const bgUrl = customSettings.backgroundImage && customSettings.backgroundImage !== 'none' ? `url(/api/custom-media/${customSettings.backgroundImage})` : 'none';
 
     return (
-        <div className={styles.container} style={{ backgroundImage: bgUrl, backgroundSize: 'cover' }}>
+        <div
+            className={`${styles.container} ${customSettings.theme === 'dark' ? styles.darkTheme : ''}`}
+            style={{ backgroundImage: bgUrl, backgroundSize: 'cover' }}
+        >
             {/* Background Decorations */}
             <div className={styles.backgroundDecor} />
             <div className={styles.backgroundDecor2} />

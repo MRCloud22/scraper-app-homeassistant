@@ -10,7 +10,10 @@ export async function GET() {
     try {
         if (fs.existsSync(configPath)) {
             const data = fs.readFileSync(configPath, 'utf8');
+            console.log('Successfully read settings.json from', configPath);
             return NextResponse.json(JSON.parse(data));
+        } else {
+            console.warn('settings.json not found at', configPath);
         }
     } catch (error) {
         console.error('Error reading custom settings:', error);
