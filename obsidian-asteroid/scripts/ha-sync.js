@@ -27,29 +27,38 @@ async function sync() {
     let apiRenamed = false;
 
     try {
-        if (fs.existsSync(apiDir)) {
+        if (fs.existsSync(apiDir) && !fs.existsSync(apiBackupDir)) {
             console.log('Temporarily hiding API routes for static export build...');
             execSync(`mv "${apiDir}" "${apiBackupDir}"`);
             apiRenamed = true;
+        } else if (fs.existsSync(apiBackupDir)) {
+            console.warn('Backup API directory already exists. Skipping move.');
         }
 
-        console.log('Running npm run build...');
+        console.log('Running npm run build (static export mode)...');
+        // This build targeted at .next_export (via next.config.ts distDir)
         execSync('npm run build', { stdio: 'inherit', env: buildEnv });
         console.log('Static export build successful.');
     } catch (err) {
-        console.error('Initial build failed or partially completed:', err.message);
-        // Ensure out directory exists even if build failed, so sync doesn't crash later
+        console.error('Static export build failed or interrupted:', err.message);
+        // Ensure out directory exists for FTP logic downstream
         if (!fs.existsSync(OUTPUT_DIR)) {
-            console.log('Creating empty out directory as fallback.');
+            console.log('Creating empty out directory for sync continuity.');
             fs.mkdirSync(OUTPUT_DIR, { recursive: true });
         }
     } finally {
         if (apiRenamed && fs.existsSync(apiBackupDir)) {
             console.log('Restoring API routes...');
             try {
-                execSync(`mv "${apiBackupDir}" "${apiDir}"`);
+                // Check if target exists before moving back
+                if (!fs.existsSync(apiDir)) {
+                    execSync(`mv "${apiBackupDir}" "${apiDir}"`);
+                } else {
+                    console.error('API directory unexpectedly restored itself. Removing backup.');
+                    execSync(`rm -rf "${apiBackupDir}"`);
+                }
             } catch (moveErr) {
-                console.error('Failed to restore API directory! Manual intervention may be needed.', moveErr);
+                console.error('Failed to restore API directory!', moveErr);
             }
         }
     }
