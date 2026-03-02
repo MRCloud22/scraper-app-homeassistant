@@ -29,6 +29,8 @@ interface CustomSettings {
     theme?: string;
 }
 
+const VERSION = "0.4.16";
+
 export default function Signage2Page() {
     const { settings } = useSettings();
     const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -36,6 +38,7 @@ export default function Signage2Page() {
     const [visibleStart, setVisibleStart] = useState(0);
     const [mounted, setMounted] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [lastFetch, setLastFetch] = useState<string>('Never');
     const VISIBLE_COUNT = 5;
 
     useEffect(() => {
@@ -61,10 +64,15 @@ export default function Signage2Page() {
 
     const fetchCustomSettings = useCallback(async () => {
         try {
+            console.log('Fetching custom settings from /api/custom-settings...');
             const response = await fetch('/api/custom-settings', { cache: 'no-store' });
+            setLastFetch(new Date().toLocaleTimeString());
             if (response.ok) {
                 const data = await response.json();
-                setCustomSettings(data.signage2 || data); // Support nesting or flat
+                console.log('Custom settings received:', data);
+                setCustomSettings(data.signage2 || data);
+            } else {
+                console.error('API Error:', response.status, response.statusText);
             }
         } catch (error) {
             console.error('Error fetching custom settings:', error);
@@ -197,6 +205,12 @@ export default function Signage2Page() {
                     </div>
                 </div>
             </footer>
+            {/* Version & Debug (Hidden by default, hover near bottom to see) */}
+            <div className={styles.versionTag}>
+                v{VERSION} | Settings: {Object.keys(customSettings).length > 0 ? 'Loaded' : 'Empty/Default'} | Last Check: {lastFetch}
+                <br />
+                Path: /api/custom-settings
+            </div>
         </div>
     );
 }
