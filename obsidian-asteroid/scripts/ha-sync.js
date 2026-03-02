@@ -29,7 +29,8 @@ async function sync() {
     try {
         if (fs.existsSync(apiDir)) {
             console.log('Temporarily hiding API routes for static export build...');
-            fs.renameSync(apiDir, apiBackupDir);
+            // Use shell mv because fs.renameSync can fail with EXDEV on Docker volumes
+            execSync(`mv "${apiDir}" "${apiBackupDir}"`);
             apiRenamed = true;
         }
 
@@ -40,7 +41,7 @@ async function sync() {
     } finally {
         if (apiRenamed && fs.existsSync(apiBackupDir)) {
             console.log('Restoring API routes...');
-            fs.renameSync(apiBackupDir, apiDir);
+            execSync(`mv "${apiBackupDir}" "${apiDir}"`);
         }
     }
 
