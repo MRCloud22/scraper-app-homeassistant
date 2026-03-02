@@ -53,12 +53,12 @@ async function sync() {
             const scraperOutputFile = path.join(__dirname, '../public/appointments.json');
             const rssOutputFile = path.join(__dirname, '../public/rss.xml');
 
-            // Configuration source: check for the actual subdirectory, not just the parent
-            const configBase = fs.existsSync('/addon_config/obsidian_asteroid') ? '/addon_config' : '/config';
-            const settingsFile = path.join(configBase, 'obsidian_asteroid/settings.json');
-            const mediaDir = path.join(configBase, 'obsidian_asteroid/media');
+            // /addon_config is the HA standard location for add-on persistent data
+            const CONFIG_DIR = '/addon_config/obsidian_asteroid';
+            const settingsFile = path.join(CONFIG_DIR, 'settings.json');
+            const mediaDir = path.join(CONFIG_DIR, 'media');
 
-            console.log(`Config source: ${configBase}`);
+            console.log(`Config dir: ${CONFIG_DIR}`);
 
             if (!fs.existsSync(STATIC_BUILD_DIR)) {
                 console.warn('Static build dir missing, skipping data injection.');
@@ -113,7 +113,15 @@ async function sync() {
                     const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, '../package.json'), 'utf8'));
                     const currentVersion = pkg.version;
 
-                    let lastSyncData = { timestamp: 0, version: '0.0.0' };
+                    // Settings hash to detect when user edits settings.json
+                    let currentSettingsHash = '';
+                    if (fs.existsSync(settingsFile)) {
+                        const settingsContent = fs.readFileSync(settingsFile, 'utf8');
+                        // Simple hash: just use the content length + last 32 chars as a fingerprint
+                        currentSettingsHash = settingsContent.length + '_' + settingsContent.slice(-32).replace(/\s/g, '');
+                    }
+
+                    let lastSyncData = { timestamp: 0, version: '0.0.0', settingsHash: '' };
                     if (fs.existsSync(lastSyncFile)) {
                         try {
                             lastSyncData = JSON.parse(fs.readFileSync(lastSyncFile, 'utf8'));
@@ -121,8 +129,13 @@ async function sync() {
                     }
 
                     const isVersionUpgrade = currentVersion !== lastSyncData.version;
+                    const isSettingsChanged = currentSettingsHash !== lastSyncData.settingsHash;
+
                     if (isVersionUpgrade) {
                         console.log(`Version changed (${lastSyncData.version} -> ${currentVersion}). Forcing full sync.`);
+                    }
+                    if (isSettingsChanged && !isVersionUpgrade) {
+                        console.log('settings.json changed. Forcing full sync.');
                     }
 
                     try {
@@ -149,7 +162,7 @@ async function sync() {
                                     await uploadChangedFiles(localPath, path.join(remoteDir, item));
                                     await client.cd('..');
                                 } else {
-                                    if (isVersionUpgrade || stats.mtimeMs > lastSyncData.timestamp) {
+                                    if (isVersionUpgrade || isSettingsChanged || stats.mtimeMs > lastSyncData.timestamp) {
                                         console.log(`Uploading: ${item}${isVersionUpgrade ? ' (Force)' : ''}`);
                                         await client.uploadFrom(localPath, item);
                                     }
@@ -161,7 +174,8 @@ async function sync() {
 
                         fs.writeFileSync(lastSyncFile, JSON.stringify({
                             timestamp: Date.now(),
-                            version: currentVersion
+                            version: currentVersion,
+                            settingsHash: currentSettingsHash
                         }));
                         console.log('FTP Upload successful!');
                     } catch (err) {
