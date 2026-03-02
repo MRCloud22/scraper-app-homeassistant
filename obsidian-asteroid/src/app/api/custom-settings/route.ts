@@ -9,8 +9,8 @@ export async function GET() {
 
     // Check multiple possible configuration paths
     const pathsToTry = [
-        '/config/obsidian_asteroid/settings.json',
         '/addon_config/obsidian_asteroid/settings.json',
+        '/config/obsidian_asteroid/settings.json',
         '/data/obsidian_asteroid/settings.json',
         '/data/settings.json',
         path.join(process.cwd(), 'public/settings.json')

@@ -29,7 +29,7 @@ interface CustomSettings {
     theme?: string;
 }
 
-const VERSION = "0.4.20";
+const VERSION = "0.4.21";
 
 export default function Signage2Page() {
     const { settings } = useSettings();
@@ -66,8 +66,16 @@ export default function Signage2Page() {
     const fetchCustomSettings = useCallback(async () => {
         try {
             // Test connectivity first
-            const pingRes = await fetch('/api/ping', { cache: 'no-store' });
-            const pingText = await pingRes.text();
+            let pingStatus = 'Pending';
+            let pingRaw = '';
+
+            try {
+                const pingRes = await fetch('/api/ping', { cache: 'no-store' });
+                pingStatus = pingRes.status === 200 ? 'OK' : 'Err ' + pingRes.status;
+                pingRaw = await pingRes.text();
+            } catch (e: any) {
+                pingStatus = 'Failed: ' + e.message;
+            }
 
             // Fetch custom settings
             const response = await fetch('/api/custom-settings', { cache: 'no-store' });
@@ -76,9 +84,9 @@ export default function Signage2Page() {
             const text = await response.text();
             if (text.startsWith('<!DOCTYPE')) {
                 setDebugInfo({
-                    error: 'API returned HTML (404/Redirect).',
-                    pingStatus: pingRes.status,
-                    pingRaw: pingText.substring(0, 30)
+                    error: 'API returned HTML (404/Redirect). Are you sure about the path?',
+                    pingStatus,
+                    pingRaw: pingRaw.substring(0, 30)
                 });
                 return;
             }
@@ -87,17 +95,21 @@ export default function Signage2Page() {
                 const data = JSON.parse(text);
                 setDebugInfo({
                     ...data._debug,
-                    pingStatus: pingRes.status === 200 ? 'OK' : 'Error'
+                    pingStatus,
+                    error: response.ok ? null : (data.error || 'API Response Not OK')
                 });
                 if (response.ok) {
                     setCustomSettings(data.signage2 || data);
                 }
             } catch (jsonErr) {
-                setDebugInfo({ error: 'JSON Parse Error: ' + text.substring(0, 50) });
+                setDebugInfo({
+                    error: 'JSON Parse Error: ' + text.substring(0, 50),
+                    pingStatus
+                });
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Frontend Fetch Error:', error);
-            setDebugInfo({ error: 'Frontend Fetch Failed: ' + error });
+            setDebugInfo({ error: 'Frontend Fetch Failed: ' + error.message });
         }
     }, []);
 
