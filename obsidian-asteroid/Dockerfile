@@ -25,12 +25,12 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
 WORKDIR /app
 
 # Copy package files
-COPY obsidian-asteroid/package*.json ./
+COPY package*.json ./
 RUN npm install
 RUN npm install -g serve
 
 # Copy application source
-COPY obsidian-asteroid/ .
+COPY . .
 
 # Create initial data placeholder to prevent 404s
 RUN mkdir -p public && echo '{"appointments":[],"count":0,"lastUpdated":""}' > public/appointments.json
