@@ -42,20 +42,32 @@ export default function Home() {
 
     try {
       // Fetch from the static JSON file (updated by the background sync service)
-      // Using relative path './' to automatically handle HA Ingress and Root hosting
-      const response = await fetch('./appointments.json', { cache: 'no-store' });
+      const response = await fetch('appointments.json', { cache: 'no-store' });
 
-      const data: ApiResponse = await response.json();
+      if (!response.ok) {
+        throw new Error(`HTTP Error: ${response.status}`);
+      }
+
+      const data = await response.json();
       console.log('Fetched data:', data);
 
-      if (data.success) {
-        setAppointments(data.appointments);
-        setLastUpdated(data.lastUpdated || null);
+      // Handle both wrapped {success: true, appointments: []} and raw [...] formats
+      if (data && typeof data === 'object' && !Array.isArray(data)) {
+        if (data.success === false) {
+          setError(data.error || 'Fehler beim Laden der Termine');
+        } else {
+          setAppointments(data.appointments || []);
+          setLastUpdated(data.lastUpdated || null);
+        }
+      } else if (Array.isArray(data)) {
+        // Fallback for raw array format
+        setAppointments(data);
       } else {
-        setError(data.error || 'Fehler beim Laden der Termine');
+        setError('Ungültiges Datenformat empfangen');
       }
-    } catch (err) {
-      setError('Verbindung fehlgeschlagen');
+    } catch (err: any) {
+      setError(`Verbindung fehlgeschlagen: ${err.message}`);
+      console.error('Fetch error:', err);
     } finally {
       setLoading(false);
     }

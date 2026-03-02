@@ -29,19 +29,28 @@ async function sync() {
     try {
         if (fs.existsSync(apiDir)) {
             console.log('Temporarily hiding API routes for static export build...');
-            // Use shell mv because fs.renameSync can fail with EXDEV on Docker volumes
             execSync(`mv "${apiDir}" "${apiBackupDir}"`);
             apiRenamed = true;
         }
 
+        console.log('Running npm run build...');
         execSync('npm run build', { stdio: 'inherit', env: buildEnv });
         console.log('Static export build successful.');
     } catch (err) {
-        console.error('Initial build failed:', err);
+        console.error('Initial build failed or partially completed:', err.message);
+        // Ensure out directory exists even if build failed, so sync doesn't crash later
+        if (!fs.existsSync(OUTPUT_DIR)) {
+            console.log('Creating empty out directory as fallback.');
+            fs.mkdirSync(OUTPUT_DIR, { recursive: true });
+        }
     } finally {
         if (apiRenamed && fs.existsSync(apiBackupDir)) {
             console.log('Restoring API routes...');
-            execSync(`mv "${apiBackupDir}" "${apiDir}"`);
+            try {
+                execSync(`mv "${apiBackupDir}" "${apiDir}"`);
+            } catch (moveErr) {
+                console.error('Failed to restore API directory! Manual intervention may be needed.', moveErr);
+            }
         }
     }
 
@@ -70,16 +79,17 @@ async function sync() {
 
             // Synchronize files to the export folder for FTP
             if (fs.existsSync(scraperOutputFile)) {
-                if (fs.existsSync(OUTPUT_DIR)) {
-                    fs.copyFileSync(scraperOutputFile, exportOutputFile);
-                    console.log('Synchronized appointments.json to export container.');
+                if (!fs.existsSync(OUTPUT_DIR)) {
+                    console.log('Re-creating missing export directory...');
+                    fs.mkdirSync(OUTPUT_DIR, { recursive: true });
+                }
 
-                    if (fs.existsSync(rssOutputFile)) {
-                        fs.copyFileSync(rssOutputFile, exportRssFile);
-                        console.log('Synchronized rss.xml to export container.');
-                    }
-                } else {
-                    console.warn('Export directory (out) missing. Skipping copy to export.');
+                fs.copyFileSync(scraperOutputFile, exportOutputFile);
+                console.log('Synchronized appointments.json to export container.');
+
+                if (fs.existsSync(rssOutputFile)) {
+                    fs.copyFileSync(rssOutputFile, exportRssFile);
+                    console.log('Synchronized rss.xml to export container.');
                 }
             } else {
                 console.warn('Scraper output missing! Check scraper logs.');
