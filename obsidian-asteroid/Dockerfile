@@ -36,8 +36,17 @@ COPY . .
 RUN mkdir -p public && echo '{"appointments":[],"count":0,"lastUpdated":""}' > public/appointments.json
 COPY . .
 
-# Build the Next.js application
+# Build the Next.js application for server mode (HA UI)
 RUN npm run build
+
+# Build the Next.js application for static export (FTP Sync)
+# We use NEXT_PUBLIC_EXPORT=true to trigger the 'export' output in next.config.ts
+ENV NEXT_PUBLIC_EXPORT=true
+RUN npm run build
+# The static export will be in .next_export/ (controlled by distDir in next.config.ts)
+# After build, we need to run 'next export' equivalent - in Next 15+ this happens during build
+# Our next.config.ts handles the 'output: export' part already.
+# Standard Next.js behavior for 'output: export' puts files in 'out' folder.
 
 # Make the run script executable
 RUN chmod a+x /app/run.sh

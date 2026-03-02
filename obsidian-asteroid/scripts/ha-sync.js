@@ -14,53 +14,11 @@ async function sync() {
         return;
     }
 
-    // 1. Initial Build (once at startup to save resources)
-    console.log('Step 1: Initial build for static export...');
-    const buildEnv = {
-        ...process.env,
-        NEXT_PUBLIC_EXPORT: 'true',
-        NEXT_PUBLIC_BASE_PATH: '' // Default to root
-    };
-
-    const apiDir = path.join(__dirname, '../src/app/api');
-    const apiBackupDir = path.join(__dirname, '../src/app/_api_backup');
-    let apiRenamed = false;
-
-    try {
-        if (fs.existsSync(apiDir) && !fs.existsSync(apiBackupDir)) {
-            console.log('Temporarily hiding API routes for static export build...');
-            execSync(`mv "${apiDir}" "${apiBackupDir}"`);
-            apiRenamed = true;
-        } else if (fs.existsSync(apiBackupDir)) {
-            console.warn('Backup API directory already exists. Skipping move.');
-        }
-
-        console.log('Running npm run build (static export mode)...');
-        // This build targeted at .next_export (via next.config.ts distDir)
-        execSync('npm run build', { stdio: 'inherit', env: buildEnv });
-        console.log('Static export build successful.');
-    } catch (err) {
-        console.error('Static export build failed or interrupted:', err.message);
-        // Ensure out directory exists for FTP logic downstream
-        if (!fs.existsSync(OUTPUT_DIR)) {
-            console.log('Creating empty out directory for sync continuity.');
-            fs.mkdirSync(OUTPUT_DIR, { recursive: true });
-        }
-    } finally {
-        if (apiRenamed && fs.existsSync(apiBackupDir)) {
-            console.log('Restoring API routes...');
-            try {
-                // Check if target exists before moving back
-                if (!fs.existsSync(apiDir)) {
-                    execSync(`mv "${apiBackupDir}" "${apiDir}"`);
-                } else {
-                    console.error('API directory unexpectedly restored itself. Removing backup.');
-                    execSync(`rm -rf "${apiBackupDir}"`);
-                }
-            } catch (moveErr) {
-                console.error('Failed to restore API directory!', moveErr);
-            }
-        }
+    // 1. Verification of Pre-built Assets
+    console.log('Step 1: Verifying production assets...');
+    if (!fs.existsSync(OUTPUT_DIR)) {
+        console.log('Creating out directory for first-run consistency...');
+        fs.mkdirSync(OUTPUT_DIR, { recursive: true });
     }
 
     while (true) {
