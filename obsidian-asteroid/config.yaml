@@ -1,11 +1,12 @@
 name: "Obsidian Asteroid Scraper"
 description: "A Next.js application that scrapes appointments using Puppeteer."
-version: "0.4.18"
+version: "0.4.19"
 slug: "obsidian_asteroid"
 url: "https://github.com/MRCloud22/scraper-app-homeassistant"
 init: false
 map:
   - config:rw
+  - addon_config:rw
 arch:
   - aarch64
   - amd64

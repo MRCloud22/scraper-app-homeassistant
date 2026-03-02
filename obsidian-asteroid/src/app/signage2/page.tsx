@@ -29,7 +29,7 @@ interface CustomSettings {
     theme?: string;
 }
 
-const VERSION = "0.4.18";
+const VERSION = "0.4.19";
 
 export default function Signage2Page() {
     const { settings } = useSettings();
@@ -65,13 +65,24 @@ export default function Signage2Page() {
 
     const fetchCustomSettings = useCallback(async () => {
         try {
-            // Added trailing slash and absolute path
-            const response = await fetch('/api/custom-settings/', { cache: 'no-store' });
+            // Standard Next.js route (NO trailing slash)
+            const response = await fetch('/api/custom-settings', { cache: 'no-store' });
             setLastFetch(new Date().toLocaleTimeString());
-            const data = await response.json();
-            setDebugInfo(data._debug);
-            if (response.ok) {
-                setCustomSettings(data.signage2 || data);
+
+            const text = await response.text();
+            if (text.startsWith('<!DOCTYPE')) {
+                setDebugInfo({ error: 'API returned HTML (404/Redirect) instead of JSON. Check route.' });
+                return;
+            }
+
+            try {
+                const data = JSON.parse(text);
+                setDebugInfo(data._debug);
+                if (response.ok) {
+                    setCustomSettings(data.signage2 || data);
+                }
+            } catch (jsonErr) {
+                setDebugInfo({ error: 'JSON Parse Error: ' + text.substring(0, 100) });
             }
         } catch (error) {
             console.error('Frontend Fetch Error:', error);
