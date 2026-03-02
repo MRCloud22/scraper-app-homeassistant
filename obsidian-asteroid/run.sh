@@ -8,10 +8,28 @@ cd /app
 
 bashio::log.info "Using pre-built Next.js assets from Docker image..."
 
-# In Home Assistant, /addon_config is already the addon-specific directory
-# (mapped from addon_configs/HASH_slug/ on the host)
-# So we store files directly in /addon_config — no subdirectory needed.
-CONFIG_DIR="/addon_config"
+# Discover the real config directory
+# HA maps /config via config.yaml "map: config:rw"
+# The user's addon config lives at /config/addons_config/HASH_slug/
+# We find it dynamically by looking for *_obsidian_asteroid
+CONFIG_DIR=""
+if [ -d "/config/addons_config" ]; then
+    FOUND_DIR=$(find /config/addons_config -maxdepth 1 -type d -name "*_obsidian_asteroid" | head -1)
+    if [ -n "$FOUND_DIR" ]; then
+        CONFIG_DIR="$FOUND_DIR"
+        bashio::log.info "Found config directory: ${CONFIG_DIR}"
+    fi
+fi
+
+# Fallback to /addon_config if the above didn't work
+if [ -z "$CONFIG_DIR" ]; then
+    CONFIG_DIR="/addon_config"
+    bashio::log.info "Using fallback config directory: ${CONFIG_DIR}"
+fi
+
+# Write the discovered path so Node.js scripts can read it
+echo "$CONFIG_DIR" > /tmp/config_dir_path
+
 MEDIA_DIR="${CONFIG_DIR}/media"
 
 bashio::log.info "Configuration directory: ${CONFIG_DIR}"
@@ -25,17 +43,7 @@ if [ -z "$(ls -A ${MEDIA_DIR} 2>/dev/null)" ]; then
     cp /app/public/defaults/*.png "${MEDIA_DIR}/" 2>/dev/null || true
 fi
 
-# Wait up to 5s for /addon_config to be mounted and accessible
-for i in 1 2 3 4 5; do
-    if [ -d "${CONFIG_DIR}" ]; then break; fi
-    bashio::log.info "Waiting for /addon_config to be available... (${i}/5)"
-    sleep 1
-done
-
-# Create default settings.json ONLY if:
-#   - file doesn't exist, OR
-#   - file is empty, OR
-#   - file contains invalid JSON (node -e fails on parse)
+# Create default settings.json ONLY if missing, empty, or invalid
 NEEDS_DEFAULT=false
 if [ ! -f "${CONFIG_DIR}/settings.json" ]; then
     bashio::log.info "settings.json not found — creating default."

@@ -53,9 +53,23 @@ async function sync() {
             const scraperOutputFile = path.join(__dirname, '../public/appointments.json');
             const rssOutputFile = path.join(__dirname, '../public/rss.xml');
 
-            // /addon_config is already the addon-specific directory in HA
-            // (mapped from addon_configs/HASH_slug/ on the host — no subdirectory needed)
-            const CONFIG_DIR = '/addon_config';
+            // Discover the real config directory (run.sh writes it to /tmp/config_dir_path)
+            let CONFIG_DIR = '/addon_config'; // fallback
+            try {
+                if (fs.existsSync('/tmp/config_dir_path')) {
+                    CONFIG_DIR = fs.readFileSync('/tmp/config_dir_path', 'utf8').trim();
+                } else {
+                    // Scan for it ourselves
+                    const base = '/config/addons_config';
+                    if (fs.existsSync(base)) {
+                        const found = fs.readdirSync(base).find(d =>
+                            d.endsWith('_obsidian_asteroid') && fs.statSync(path.join(base, d)).isDirectory()
+                        );
+                        if (found) CONFIG_DIR = path.join(base, found);
+                    }
+                }
+            } catch (e) { console.warn('Config dir discovery error:', e.message); }
+
             const settingsFile = path.join(CONFIG_DIR, 'settings.json');
             const mediaDir = path.join(CONFIG_DIR, 'media');
 
