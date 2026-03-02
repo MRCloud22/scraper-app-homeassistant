@@ -1,8 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Always use static export for HA and FTP
-  output: 'export',
+  // Use static export ONLY for FTP sync, otherwise use server mode for HA API
+  output: process.env.NEXT_PUBLIC_EXPORT === 'true' ? 'export' : undefined,
   // Ensure directory structures work (/signage/ instead of signage.html)
   trailingSlash: true,
   // Use root as base to satisfy both HA Ingress and Root FTP
