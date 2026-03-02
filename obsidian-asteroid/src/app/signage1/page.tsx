@@ -17,10 +17,11 @@ interface Appointment {
 export default function Signage1Page() {
     const { settings } = useSettings();
     const [appointments, setAppointments] = useState<Appointment[]>([]);
+    const [customSettings, setCustomSettings] = useState<any>({});
     const [visibleStart, setVisibleStart] = useState(0);
     const [mounted, setMounted] = useState(false);
     const [loading, setLoading] = useState(true);
-    const VISIBLE_COUNT = 3; // Circle design fits about 3-4 items comfortably
+    const VISIBLE_COUNT = 3;
 
     useEffect(() => {
         setMounted(true);
@@ -43,12 +44,28 @@ export default function Signage1Page() {
         }
     }, []);
 
+    const fetchCustomSettings = useCallback(async () => {
+        try {
+            const response = await fetch('/api/custom-settings', { cache: 'no-store' });
+            if (response.ok) {
+                const data = await response.json();
+                setCustomSettings(data.signage1 || data); // Support nesting or flat
+            }
+        } catch (error) {
+            console.error('Error fetching custom settings:', error);
+        }
+    }, []);
+
     useEffect(() => {
         if (!mounted) return;
         fetchAppointments();
-        const pollTimer = setInterval(fetchAppointments, 60000);
+        fetchCustomSettings();
+        const pollTimer = setInterval(() => {
+            fetchAppointments();
+            fetchCustomSettings();
+        }, 60000);
         return () => clearInterval(pollTimer);
-    }, [fetchAppointments, mounted]);
+    }, [fetchAppointments, fetchCustomSettings, mounted]);
 
     useEffect(() => {
         if (!mounted || appointments.length <= VISIBLE_COUNT) return;
@@ -73,28 +90,36 @@ export default function Signage1Page() {
         visibleStart + VISIBLE_COUNT
     );
 
+    // Dynamic assets
+    const logoSrc = customSettings.logo ? `/api/custom-media/${customSettings.logo}` : null;
+    const bgUrl = customSettings.backgroundImage ? `url(/api/custom-media/${customSettings.backgroundImage})` : 'none';
+
     return (
-        <div className={styles.container}>
+        <div className={styles.container} style={{ backgroundImage: bgUrl, backgroundSize: 'cover' }}>
             {/* Header with Logo */}
             <header className={styles.header}>
                 <div className={styles.logoIcon}>
-                    <Flower size={80} color="#C5A059" />
+                    {logoSrc ? (
+                        <img src={logoSrc} alt="Logo" className={styles.customLogo} style={{ height: '80px', width: 'auto' }} />
+                    ) : (
+                        <Flower size={80} color="#C5A059" />
+                    )}
                 </div>
                 <div className={styles.logoText}>
-                    <h1>Beautykuppel</h1>
-                    <p>Therme Bad Aibling</p>
+                    <h1>{customSettings.title || "Beautykuppel"}</h1>
+                    <p>{customSettings.subtitle || "Therme Bad Aibling"}</p>
                 </div>
             </header>
 
             {/* Main Circle Content */}
             <main className={styles.main}>
-                <div className={styles.circleContainer}>
-                    <h2 className={styles.title}>Freie Termine heute</h2>
+                <div className={styles.circleContainer} style={customSettings.circleColor ? { backgroundColor: customSettings.circleColor } : {}}>
+                    <h2 className={styles.title}>{customSettings.listTitle || "Freie Termine heute"}</h2>
 
                     {loading && appointments.length === 0 ? (
                         <p>Laden...</p>
                     ) : futureAppointments.length === 0 ? (
-                        <p className={styles.emptyState}>{settings.emptyStateText || 'Aktuell sind keine freien Termine vorhanden.'}</p>
+                        <p className={styles.emptyState}>{customSettings.emptyText || settings.emptyStateText || 'Aktuell sind keine freien Termine vorhanden.'}</p>
                     ) : (
                         <table className={styles.appointmentsTable}>
                             <thead className={styles.tableHeader}>
@@ -126,11 +151,15 @@ export default function Signage1Page() {
             <footer className={styles.footer}>
                 <div className={styles.footerCircles}>
                     <div className={styles.qrCircle}>
-                        <QrCode size={120} color="#5D7266" />
-                        <span className={styles.qrText}>Hier buchen</span>
+                        {customSettings.qrCode ? (
+                            <img src={`/api/custom-media/${customSettings.qrCode}`} alt="QR" style={{ width: '120px', height: '120px' }} />
+                        ) : (
+                            <QrCode size={120} color="#5D7266" />
+                        )}
+                        <span className={styles.qrText}>{customSettings.qrLabel || "Hier buchen"}</span>
                     </div>
                     <div className={styles.infoCircle}>
-                        Buchung direkt am Empfang
+                        {customSettings.infoText || "Buchung direkt am Empfang"}
                     </div>
                 </div>
 

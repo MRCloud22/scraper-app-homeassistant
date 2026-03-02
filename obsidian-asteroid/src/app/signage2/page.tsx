@@ -17,10 +17,11 @@ interface Appointment {
 export default function Signage2Page() {
     const { settings } = useSettings();
     const [appointments, setAppointments] = useState<Appointment[]>([]);
+    const [customSettings, setCustomSettings] = useState<any>({});
     const [visibleStart, setVisibleStart] = useState(0);
     const [mounted, setMounted] = useState(false);
     const [loading, setLoading] = useState(true);
-    const VISIBLE_COUNT = 5; // Pill design fits about 5 items comfortably
+    const VISIBLE_COUNT = 5;
 
     useEffect(() => {
         setMounted(true);
@@ -43,12 +44,28 @@ export default function Signage2Page() {
         }
     }, []);
 
+    const fetchCustomSettings = useCallback(async () => {
+        try {
+            const response = await fetch('/api/custom-settings', { cache: 'no-store' });
+            if (response.ok) {
+                const data = await response.json();
+                setCustomSettings(data.signage2 || data); // Support nesting or flat
+            }
+        } catch (error) {
+            console.error('Error fetching custom settings:', error);
+        }
+    }, []);
+
     useEffect(() => {
         if (!mounted) return;
         fetchAppointments();
-        const pollTimer = setInterval(fetchAppointments, 60000);
+        fetchCustomSettings();
+        const pollTimer = setInterval(() => {
+            fetchAppointments();
+            fetchCustomSettings();
+        }, 60000);
         return () => clearInterval(pollTimer);
-    }, [fetchAppointments, mounted]);
+    }, [fetchAppointments, fetchCustomSettings, mounted]);
 
     useEffect(() => {
         if (!mounted || appointments.length <= VISIBLE_COUNT) return;
@@ -73,38 +90,53 @@ export default function Signage2Page() {
         visibleStart + VISIBLE_COUNT
     );
 
+    // Dynamic assets
+    const logoSrc = customSettings.logo ? `/api/custom-media/${customSettings.logo}` : null;
+    const bgUrl = customSettings.backgroundImage ? `url(/api/custom-media/${customSettings.backgroundImage})` : 'none';
+
     return (
-        <div className={styles.container}>
-            {/* Background Decorations */}
-            <div className={styles.backgroundDecor} />
-            <div className={styles.backgroundDecor2} />
+        <div className={styles.container} style={{ backgroundImage: bgUrl, backgroundSize: 'cover' }}>
+            {/* Background Decorations (only if no custom background image) */}
+            {!customSettings.backgroundImage && (
+                <>
+                    <div className={styles.backgroundDecor} />
+                    <div className={styles.backgroundDecor2} />
+                </>
+            )}
 
             {/* Header */}
             <header className={styles.header}>
                 <div className={styles.logoIcon}>
-                    <Flower size={60} color="#C5A059" />
+                    {logoSrc ? (
+                        <img src={logoSrc} alt="Logo" style={{ height: '60px', width: 'auto' }} />
+                    ) : (
+                        <Flower size={60} color="#C5A059" />
+                    )}
                 </div>
                 <div className={styles.logoText}>
-                    <h1>Beautykuppel</h1>
-                    <p>Therme Bad Aibling</p>
+                    <h1>{customSettings.title || "Beautykuppel"}</h1>
+                    <p>{customSettings.subtitle || "Therme Bad Aibling"}</p>
                 </div>
             </header>
 
             {/* Main Content */}
             <main className={styles.main}>
-                <h2 className={styles.title}>Freie Termine heute</h2>
+                <h2 className={styles.title}>{customSettings.listTitle || "Freie Termine heute"}</h2>
 
                 {loading && appointments.length === 0 ? (
                     <div className={styles.emptyState}>Laden...</div>
                 ) : futureAppointments.length === 0 ? (
-                    <div className={styles.emptyState}>{settings.emptyStateText || 'Aktuell sind keine freien Termine vorhanden.'}</div>
+                    <div className={styles.emptyState}>{customSettings.emptyText || settings.emptyStateText || 'Aktuell sind keine freien Termine vorhanden.'}</div>
                 ) : (
                     <div className={styles.appointmentList}>
                         {visibleAppointments.map((apt, index) => (
                             <div
                                 key={`${apt.date}-${apt.time}-${index}`}
                                 className={styles.appointmentPill}
-                                style={{ animationDelay: `${index * 0.15}s` }}
+                                style={{
+                                    animationDelay: `${index * 0.15}s`,
+                                    backgroundColor: customSettings.pillColor || 'rgba(255, 255, 255, 0.85)'
+                                }}
                             >
                                 <div className={styles.pillImage}>
                                     {apt.imageUrl ? (
@@ -129,9 +161,13 @@ export default function Signage2Page() {
             {/* Footer */}
             <footer className={styles.footer}>
                 <div className={styles.qrSection}>
-                    <div className={styles.qrInfoText}>Infos & Buchung unter<br />beautykuppel.de/termine</div>
+                    <div className={styles.qrInfoText}>{customSettings.qrLabel || "Infos & Buchung unter"}<br />{customSettings.qrUrl || "beautykuppel.de/termine"}</div>
                     <div className={styles.qrContainer}>
-                        <QrCode size={100} color="#5D7266" />
+                        {customSettings.qrCode ? (
+                            <img src={`/api/custom-media/${customSettings.qrCode}`} alt="QR" style={{ width: '100px', height: '100px' }} />
+                        ) : (
+                            <QrCode size={100} color="#5D7266" />
+                        )}
                     </div>
                 </div>
             </footer>
