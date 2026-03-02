@@ -92,36 +92,41 @@ export default function Signage2Page() {
 
     // Dynamic assets
     const logoSrc = customSettings.logo ? `/api/custom-media/${customSettings.logo}` : null;
-    const bgUrl = customSettings.backgroundImage ? `url(/api/custom-media/${customSettings.backgroundImage})` : 'none';
+    const heroSrc = customSettings.heroImage ? `/api/custom-media/${customSettings.heroImage}` : null;
+    const qrSrc = customSettings.qrCode ? `/api/custom-media/${customSettings.qrCode}` : null;
+    const bgUrl = customSettings.backgroundImage && customSettings.backgroundImage !== 'none' ? `url(/api/custom-media/${customSettings.backgroundImage})` : 'none';
 
     return (
         <div className={styles.container} style={{ backgroundImage: bgUrl, backgroundSize: 'cover' }}>
-            {/* Background Decorations (only if no custom background image) */}
-            {!customSettings.backgroundImage && (
-                <>
-                    <div className={styles.backgroundDecor} />
-                    <div className={styles.backgroundDecor2} />
-                </>
+            {/* Background Decorations */}
+            <div className={styles.backgroundDecor} />
+            <div className={styles.backgroundDecor2} />
+
+            {/* Top Right Hero Image */}
+            {heroSrc && (
+                <div className={styles.heroImage}>
+                    <img src={heroSrc} alt="Hero" />
+                </div>
             )}
 
             {/* Header */}
             <header className={styles.header}>
                 <div className={styles.logoIcon}>
                     {logoSrc ? (
-                        <img src={logoSrc} alt="Logo" style={{ height: '60px', width: 'auto' }} />
+                        <img src={logoSrc} alt="Logo" style={{ height: '80px', width: 'auto' }} />
                     ) : (
-                        <Flower size={60} color="#C5A059" />
+                        <Flower size={80} color="#5E7367" />
                     )}
                 </div>
                 <div className={styles.logoText}>
-                    <h1>{customSettings.title || "Beautykuppel"}</h1>
+                    <h1>{customSettings.title || "BEAUTYKUPPEL"}</h1>
                     <p>{customSettings.subtitle || "Therme Bad Aibling"}</p>
                 </div>
             </header>
 
             {/* Main Content */}
             <main className={styles.main}>
-                <h2 className={styles.title}>{customSettings.listTitle || "Freie Termine heute"}</h2>
+                <h2 className={styles.title} dangerouslySetInnerHTML={{ __html: (customSettings.listTitle || "FREIE TERMINE<br/>HEUTE").replace('\n', '<br/>') }} />
 
                 {loading && appointments.length === 0 ? (
                     <div className={styles.emptyState}>Laden...</div>
@@ -135,15 +140,15 @@ export default function Signage2Page() {
                                 className={styles.appointmentPill}
                                 style={{
                                     animationDelay: `${index * 0.15}s`,
-                                    backgroundColor: customSettings.pillColor || 'rgba(255, 255, 255, 0.85)'
+                                    backgroundColor: customSettings.pillColor || '#F4F1E9'
                                 }}
                             >
                                 <div className={styles.pillImage}>
                                     {apt.imageUrl ? (
                                         <img src={apt.imageUrl} alt={apt.treatment} />
                                     ) : (
-                                        <div style={{ backgroundColor: '#D6E3D8', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <Flower color="#5D7266" size={40} />
+                                        <div style={{ backgroundColor: '#D7E4D9', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <Flower color="#5E7367" size={50} />
                                         </div>
                                     )}
                                 </div>
@@ -151,7 +156,7 @@ export default function Signage2Page() {
                                     <div className={styles.time}>{apt.time} Uhr</div>
                                     <div className={styles.treatment}>{apt.treatment}</div>
                                 </div>
-                                <div className={styles.price}>{apt.price}</div>
+                                <div className={styles.price}>{apt.price || '45€'}</div>
                             </div>
                         ))}
                     </div>
@@ -161,13 +166,16 @@ export default function Signage2Page() {
             {/* Footer */}
             <footer className={styles.footer}>
                 <div className={styles.qrSection}>
-                    <div className={styles.qrInfoText}>{customSettings.qrLabel || "Infos & Buchung unter"}<br />{customSettings.qrUrl || "beautykuppel.de/termine"}</div>
                     <div className={styles.qrContainer}>
-                        {customSettings.qrCode ? (
-                            <img src={`/api/custom-media/${customSettings.qrCode}`} alt="QR" style={{ width: '100px', height: '100px' }} />
+                        {qrSrc ? (
+                            <img src={qrSrc} alt="QR" />
                         ) : (
-                            <QrCode size={100} color="#5D7266" />
+                            <QrCode size={130} color="#5E7367" />
                         )}
+                    </div>
+                    <div className={styles.qrInfoText}>
+                        {customSettings.qrLabel || "Infos & Buchung unter"}<br />
+                        <strong>{customSettings.qrUrl || "beautykuppel.de/termine"}</strong>
                     </div>
                 </div>
             </footer>
