@@ -215,7 +215,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div className={styles.links}>
-                    <Link href="/signage" className={styles.pageLink}>
+                    <Link href="../signage/" className={styles.pageLink}>
                         → Zur Signage Ansicht
                     </Link>
                 </div>

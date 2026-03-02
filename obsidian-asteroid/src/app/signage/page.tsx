@@ -31,21 +31,9 @@ export default function SignagePage() {
     const fetchAppointments = useCallback(async () => {
         setLoading(true);
         try {
-            const isExport = process.env.NEXT_PUBLIC_EXPORT === 'true';
-            const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
-            const cacheBuster = `?t=${Date.now()}`;
-            let response;
-
-            if (isExport) {
-                // Direct fetch for static export (avoids 404 on API)
-                response = await fetch(`${basePath}/appointments.json${cacheBuster}`, { cache: 'no-store' });
-            } else {
-                // Try live API first locally
-                response = await fetch(`${basePath}/api/appointments${cacheBuster}`, { cache: 'no-store' });
-                if (!response.ok) {
-                    response = await fetch(`${basePath}/appointments.json${cacheBuster}`, { cache: 'no-store' });
-                }
-            }
+            // Use simple relative path from subdirectory /signage/
+            const response = await fetch('../appointments.json', { cache: 'no-store' });
+            if (!response.ok) throw new Error('Fetch failed');
 
             const data = await response.json();
             if (data.success) {

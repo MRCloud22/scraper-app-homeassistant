@@ -102,6 +102,11 @@ export default function Home() {
         </div>
 
         <div className={styles.headerActions}>
+          <nav className={styles.nav}>
+            <a href="signage/" className={styles.navLink}>Signage</a>
+            <a href="list/" className={styles.navLink}>Liste</a>
+            <a href="settings/" className={styles.navLink}>Einstellungen</a>
+          </nav>
           {lastUpdated && (
             <span className={styles.lastUpdated}>
               Aktualisiert: {formatLastUpdated(lastUpdated)}

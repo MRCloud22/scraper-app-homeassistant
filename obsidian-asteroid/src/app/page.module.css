@@ -60,6 +60,35 @@
   gap: 0.75rem;
 }
 
+.nav {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.navLink {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  padding: 0.4rem 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--border-radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.navLink:hover {
+  color: var(--color-accent-teal-light);
+  background: rgba(56, 178, 172, 0.1);
+  border-color: rgba(56, 178, 172, 0.2);
+}
+
+@media (min-width: 768px) {
+  .nav {
+    margin-bottom: 0;
+  }
+}
+
 @media (min-width: 768px) {
   .headerActions {
     align-items: flex-end;
