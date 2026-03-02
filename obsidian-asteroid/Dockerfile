@@ -41,18 +41,16 @@ COPY . .
 RUN mv src/app/api /tmp/api_backup && \
   NEXT_PUBLIC_EXPORT=true npm run build && \
   mv /tmp/api_backup src/app/api && \
-  mv .next_export /tmp/static_export_backup
+  mv out /tmp/out_backup
 
 # 2. Build the Next.js application for server mode (HA UI) 
 # Clear .next cache to ensure no interference from the static build metadata
 RUN rm -rf .next && npm run build
 
 # 3. Restore static export
-RUN mv /tmp/static_export_backup .next_export
+RUN mv /tmp/out_backup out
 
-# The static export will be in .next_export/ (controlled by distDir in next.config.ts)
-# After build, we need to run 'next export' equivalent - in Next 15+ this happens during build
-# Our next.config.ts handles the 'output: export' part already.
+# The static export will be in out/
 # Standard Next.js behavior for 'output: export' puts files in 'out' folder.
 
 # Make the run script executable
