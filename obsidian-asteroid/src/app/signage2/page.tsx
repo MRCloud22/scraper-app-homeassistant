@@ -29,7 +29,6 @@ interface CustomSettings {
     theme?: string;
 }
 
-const VERSION = "0.4.36";
 
 export default function Signage2Page() {
     const { settings } = useSettings();
@@ -38,8 +37,7 @@ export default function Signage2Page() {
     const [visibleStart, setVisibleStart] = useState(0);
     const [mounted, setMounted] = useState(false);
     const [loading, setLoading] = useState(true);
-    const [lastFetch, setLastFetch] = useState<string>('Never');
-    const [debugInfo, setDebugInfo] = useState<any>(null);
+    const [isStaticMode, setIsStaticMode] = useState(false);
     const VISIBLE_COUNT = 5;
 
     useEffect(() => {
@@ -64,45 +62,32 @@ export default function Signage2Page() {
     }, []);
 
     const fetchCustomSettings = useCallback(async () => {
-        setLastFetch(new Date().toLocaleTimeString());
-
-        // Strategy: always try the Next.js API first (HA Ingress mode).
-        // If the API responds with 404 or a network error, fall back to
-        // fetching settings.json directly from the same origin (static/FTP mode).
+        // Try the Next.js API first (HA Ingress mode).
+        // Fall back to static settings.json (FTP mode).
         try {
             const apiRes = await fetch('../api/custom-settings', { cache: 'no-store' });
             const text = await apiRes.text();
 
-            // If the API returned HTML it's a redirect/404 — not our API
             if (apiRes.ok && !text.startsWith('<!DOCTYPE')) {
                 const data = JSON.parse(text);
-                const { _debug, ...settings } = data;
-                setCustomSettings(settings.signage2 || settings);
-                setDebugInfo({
-                    mode: 'Server (API)',
-                    foundPath: _debug?.foundPath || '../api/custom-settings',
-                    mtime: _debug?.mtime,
-                    scanned: _debug?.scanned,
-                    keys: _debug?.keys
-                });
+                setCustomSettings(data.signage2 || data);
+                setIsStaticMode(false);
                 return;
             }
         } catch (_apiErr) {
-            // API unreachable — we are probably in static/FTP mode
+            // API unreachable — static/FTP mode
         }
 
-        // Fallback: static file on FTP server (or /public during dev)
+        // Fallback: static file on FTP server
         try {
             const staticRes = await fetch('settings.json', { cache: 'no-store' });
             if (staticRes.ok) {
                 const data = await staticRes.json();
                 setCustomSettings(data.signage2 || data);
-                setDebugInfo({ mode: 'Static (FTP)', foundPath: 'settings.json' });
-            } else {
-                setDebugInfo({ mode: 'Static (FTP)', error: 'settings.json not found' });
+                setIsStaticMode(true);
             }
-        } catch (staticErr: any) {
-            setDebugInfo({ mode: 'Unknown', error: staticErr.message });
+        } catch (_staticErr) {
+            // No settings available
         }
     }, []);
 
@@ -141,12 +126,11 @@ export default function Signage2Page() {
         visibleStart + VISIBLE_COUNT
     );
 
-    // Detect mode for assets (Static = FTP server, Server = HA Ingress via API)
-    const isStatic = debugInfo?.mode?.startsWith('Static');
+    // Asset path: static = relative media folder, HA = API endpoint
 
     // Dynamic assets — static uses relative path, HA uses relative API URL
     // Cache-busting: append ?t= to image URLs so browser refetches on each settings poll
-    const assetPath = isStatic ? 'media' : '../api/custom-media';
+    const assetPath = isStaticMode ? 'media' : '../api/custom-media';
     const cacheBust = `?t=${Math.floor(Date.now() / 60000)}`; // changes every minute
     const logoSrc = customSettings.logo ? `${assetPath}/${customSettings.logo}${cacheBust}` : null;
     const heroSrc = customSettings.heroImage ? `${assetPath}/${customSettings.heroImage}${cacheBust}` : null;
@@ -239,14 +223,7 @@ export default function Signage2Page() {
                     </div>
                 </div>
             </footer>
-            {/* Version & Debug */}
-            <div className={styles.versionTag}>
-                v{VERSION} | Title: "{customSettings.title || '(none)'}" | FileModified: {debugInfo?.mtime || '?'}
-                <br />
-                Path: {debugInfo?.foundPath || 'NONE'}
-                <br />
-                {debugInfo?.scanned || 'scanning...'}
-            </div>
+
         </div>
     );
 }
