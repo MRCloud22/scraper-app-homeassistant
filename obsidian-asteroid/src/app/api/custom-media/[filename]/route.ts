@@ -8,8 +8,9 @@ export async function generateStaticParams() {
     return [];
 }
 
-// Primary media location — /addon_config is the HA standard for add-on data
-const MEDIA_DIR = '/addon_config/obsidian_asteroid/media';
+// /addon_config is already the addon-specific directory in HA
+// (mapped from addon_configs/HASH_slug/ on the host — no subdirectory needed)
+const MEDIA_DIR = '/addon_config/media';
 
 export async function GET(
     request: NextRequest,

@@ -8,17 +8,18 @@ cd /app
 
 bashio::log.info "Using pre-built Next.js assets from Docker image..."
 
-# /addon_config is the correct standard location for add-on persistent data in HA
-# This directory is always available as a mounted volume for add-ons
-CONFIG_DIR="/addon_config/obsidian_asteroid"
+# In Home Assistant, /addon_config is already the addon-specific directory
+# (mapped from addon_configs/HASH_slug/ on the host)
+# So we store files directly in /addon_config — no subdirectory needed.
+CONFIG_DIR="/addon_config"
 MEDIA_DIR="${CONFIG_DIR}/media"
 
 bashio::log.info "Configuration directory: ${CONFIG_DIR}"
 
-# Ensure configuration directories exist
+# Ensure media directory exists
 mkdir -p "${MEDIA_DIR}"
 
-# Provide default assets if the media directory is empty
+# Provide default assets if media directory is empty
 if [ -z "$(ls -A ${MEDIA_DIR} 2>/dev/null)" ]; then
     bashio::log.info "No media files found. Populating defaults into ${MEDIA_DIR}..."
     cp /app/public/defaults/*.png "${MEDIA_DIR}/" 2>/dev/null || true

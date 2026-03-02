@@ -4,8 +4,9 @@ import path from 'path';
 
 export const dynamic = 'force-dynamic';
 
-// Primary config location — /addon_config is the HA standard for add-on data
-const SETTINGS_PATH = '/addon_config/obsidian_asteroid/settings.json';
+// /addon_config is already the addon-specific directory in HA
+// (mapped from addon_configs/HASH_slug/ on the host — no subdirectory needed)
+const SETTINGS_PATH = '/addon_config/settings.json';
 
 export async function GET() {
     try {

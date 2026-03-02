@@ -53,8 +53,9 @@ async function sync() {
             const scraperOutputFile = path.join(__dirname, '../public/appointments.json');
             const rssOutputFile = path.join(__dirname, '../public/rss.xml');
 
-            // /addon_config is the HA standard location for add-on persistent data
-            const CONFIG_DIR = '/addon_config/obsidian_asteroid';
+            // /addon_config is already the addon-specific directory in HA
+            // (mapped from addon_configs/HASH_slug/ on the host — no subdirectory needed)
+            const CONFIG_DIR = '/addon_config';
             const settingsFile = path.join(CONFIG_DIR, 'settings.json');
             const mediaDir = path.join(CONFIG_DIR, 'media');
 
