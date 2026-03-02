@@ -5,41 +5,54 @@ import path from 'path';
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-    console.log('API: custom-settings GET request received at', new Date().toISOString());
-    const configPath = '/config/obsidian_asteroid/settings.json';
+    console.log('API: custom-settings GET request received');
+
+    // Check multiple possible configuration paths
+    const pathsToTry = [
+        '/config/obsidian_asteroid/settings.json',
+        '/addon_config/obsidian_asteroid/settings.json',
+        '/data/obsidian_asteroid/settings.json',
+        '/data/settings.json',
+        path.join(process.cwd(), 'public/settings.json')
+    ];
+
     const diagnostics: any = {
         timestamp: new Date().toISOString(),
-        path: configPath,
-        exists: false,
+        checkedPaths: [],
+        foundPath: null,
         error: null,
-        stat: null,
-        rawContent: null
+        workingDir: process.cwd(),
+        env: process.env.NODE_ENV
     };
 
-    try {
-        diagnostics.exists = fs.existsSync(configPath);
-        if (diagnostics.exists) {
-            diagnostics.stat = fs.statSync(configPath);
-            const data = fs.readFileSync(configPath, 'utf8');
-            diagnostics.rawContent = data;
-            const parsed = JSON.parse(data);
-            console.log('API: Successfully read and parsed settings.json');
-            return NextResponse.json({
-                ...parsed,
-                _debug: diagnostics
-            });
-        } else {
-            // Try to look for any files in /config just to see what's there
-            try {
-                diagnostics.configFiles = fs.readdirSync('/config');
-            } catch (e: any) {
-                diagnostics.configReadError = e.message;
+    for (const configPath of pathsToTry) {
+        const pathInfo: any = { path: configPath, exists: false };
+        try {
+            if (fs.existsSync(configPath)) {
+                pathInfo.exists = true;
+                const data = fs.readFileSync(configPath, 'utf8');
+                const parsed = JSON.parse(data);
+
+                diagnostics.foundPath = configPath;
+                diagnostics.checkedPaths.push(pathInfo);
+
+                return NextResponse.json({
+                    ...parsed,
+                    _debug: diagnostics
+                });
             }
-            console.warn('API: settings.json not found at', configPath);
+        } catch (err: any) {
+            pathInfo.error = err.message;
         }
-    } catch (error: any) {
-        diagnostics.error = error.message;
-        console.error('Error reading custom settings:', error);
+        diagnostics.checkedPaths.push(pathInfo);
+    }
+
+    // If nothing found, try to list /config if it exists
+    try {
+        if (fs.existsSync('/config')) diagnostics.configList = fs.readdirSync('/config');
+        if (fs.existsSync('/addon_config')) diagnostics.addonConfigList = fs.readdirSync('/addon_config');
+    } catch (e: any) {
+        diagnostics.listError = e.message;
     }
 
     return NextResponse.json({ _debug: diagnostics });

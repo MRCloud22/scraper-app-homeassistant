@@ -29,7 +29,7 @@ interface CustomSettings {
     theme?: string;
 }
 
-const VERSION = "0.4.17";
+const VERSION = "0.4.18";
 
 export default function Signage2Page() {
     const { settings } = useSettings();
@@ -65,19 +65,17 @@ export default function Signage2Page() {
 
     const fetchCustomSettings = useCallback(async () => {
         try {
-            console.log('Fetching custom settings from /api/custom-settings...');
-            const response = await fetch('/api/custom-settings', { cache: 'no-store' });
+            // Added trailing slash and absolute path
+            const response = await fetch('/api/custom-settings/', { cache: 'no-store' });
             setLastFetch(new Date().toLocaleTimeString());
+            const data = await response.json();
+            setDebugInfo(data._debug);
             if (response.ok) {
-                const data = await response.json();
-                console.log('Custom settings received:', data);
-                setDebugInfo(data._debug);
                 setCustomSettings(data.signage2 || data);
-            } else {
-                console.error('API Error:', response.status, response.statusText);
             }
         } catch (error) {
-            console.error('Error fetching custom settings:', error);
+            console.error('Frontend Fetch Error:', error);
+            setDebugInfo({ error: 'Frontend Fetch Failed: ' + error });
         }
     }, []);
 
@@ -211,10 +209,13 @@ export default function Signage2Page() {
             <div className={styles.versionTag}>
                 v{VERSION} | Settings: {Object.keys(customSettings).length > 1 ? 'Loaded' : 'Empty/Default'} | Last: {lastFetch}
                 <br />
-                API: {debugInfo ? `Exists: ${debugInfo.exists}, Err: ${debugInfo.error || debugInfo.configReadError || 'None'}` : 'Connecting...'}
-                {debugInfo && !debugInfo.exists && debugInfo.configFiles && (
-                    <span> | Files in /config: [{debugInfo.configFiles.join(', ')}]</span>
-                )}
+                {debugInfo ? (
+                    <span>
+                        Path: {debugInfo.foundPath || 'NONE'} |
+                        API Err: {debugInfo.error || debugInfo.listError || 'None'} |
+                        Root Files: {(debugInfo.configList || debugInfo.addonConfigList || []).join(', ')}
+                    </span>
+                ) : 'Connecting...'}
             </div>
         </div>
     );
