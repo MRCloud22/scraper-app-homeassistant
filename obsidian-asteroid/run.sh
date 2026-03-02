@@ -7,7 +7,14 @@ bashio::log.info "NPM version: $(npm --version)"
 cd /app
 
 bashio::log.info "Using pre-built Next.js assets from Docker image..."
-# No npm run build here anymore to save resources and prevent UI corruption
+
+# Ensure config directories exist in Home Assistant
+bashio::log.info "Ensuring configuration directories exist in /config..."
+mkdir -p /config/obsidian_asteroid/media
+if [ ! -f /config/obsidian_asteroid/settings.json ]; then
+    bashio::log.info "Creating default settings.json..."
+    echo '{"title": "Beauty Kuppel", "theme": "dark"}' > /config/obsidian_asteroid/settings.json
+fi
 
 bashio::log.info "Launching background sync service..."
 node /app/scripts/ha-sync.js &
