@@ -29,7 +29,7 @@ interface CustomSettings {
     theme?: string;
 }
 
-const VERSION = "0.4.34";
+const VERSION = "0.4.35";
 
 export default function Signage2Page() {
     const { settings } = useSettings();
