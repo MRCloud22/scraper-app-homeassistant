@@ -29,7 +29,7 @@ interface CustomSettings {
     theme?: string;
 }
 
-const VERSION = "0.4.16";
+const VERSION = "0.4.17";
 
 export default function Signage2Page() {
     const { settings } = useSettings();
@@ -39,6 +39,7 @@ export default function Signage2Page() {
     const [mounted, setMounted] = useState(false);
     const [loading, setLoading] = useState(true);
     const [lastFetch, setLastFetch] = useState<string>('Never');
+    const [debugInfo, setDebugInfo] = useState<any>(null);
     const VISIBLE_COUNT = 5;
 
     useEffect(() => {
@@ -70,6 +71,7 @@ export default function Signage2Page() {
             if (response.ok) {
                 const data = await response.json();
                 console.log('Custom settings received:', data);
+                setDebugInfo(data._debug);
                 setCustomSettings(data.signage2 || data);
             } else {
                 console.error('API Error:', response.status, response.statusText);
@@ -207,9 +209,12 @@ export default function Signage2Page() {
             </footer>
             {/* Version & Debug (Hidden by default, hover near bottom to see) */}
             <div className={styles.versionTag}>
-                v{VERSION} | Settings: {Object.keys(customSettings).length > 0 ? 'Loaded' : 'Empty/Default'} | Last Check: {lastFetch}
+                v{VERSION} | Settings: {Object.keys(customSettings).length > 1 ? 'Loaded' : 'Empty/Default'} | Last: {lastFetch}
                 <br />
-                Path: /api/custom-settings
+                API: {debugInfo ? `Exists: ${debugInfo.exists}, Err: ${debugInfo.error || debugInfo.configReadError || 'None'}` : 'Connecting...'}
+                {debugInfo && !debugInfo.exists && debugInfo.configFiles && (
+                    <span> | Files in /config: [{debugInfo.configFiles.join(', ')}]</span>
+                )}
             </div>
         </div>
     );
