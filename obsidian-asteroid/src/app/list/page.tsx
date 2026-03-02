@@ -56,6 +56,10 @@ function ListContent() {
 
     useEffect(() => {
         fetchAppointments();
+
+        // Poll every 60 seconds for updates
+        const pollTimer = setInterval(fetchAppointments, 60000);
+        return () => clearInterval(pollTimer);
     }, [fetchAppointments]);
 
     // Filter out appointments in the past

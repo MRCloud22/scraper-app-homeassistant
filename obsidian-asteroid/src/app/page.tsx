@@ -65,13 +65,15 @@ export default function Home() {
     fetchAppointments();
   }, [fetchAppointments]);
 
-  // Periodic refresh
+  // Initial fetch and 60-second polling for live data
   useEffect(() => {
     if (!mounted) return;
-    const intervalMs = settings.signageRefreshInterval * 60 * 1000;
-    const timer = setInterval(fetchAppointments, intervalMs);
-    return () => clearInterval(timer);
-  }, [fetchAppointments, settings.signageRefreshInterval, mounted]);
+    fetchAppointments();
+
+    // Poll every 60 seconds
+    const pollTimer = setInterval(fetchAppointments, 60000);
+    return () => clearInterval(pollTimer);
+  }, [fetchAppointments, mounted]);
 
   // Filter out appointments in the past
   const visibleAppointments = useMemo(() =>

@@ -140,39 +140,6 @@ export default function SettingsPage() {
                         </div>
                     </div>
 
-                    <div className={styles.settingItem} style={{ marginTop: '2rem' }}>
-                        <div className={styles.settingInfo}>
-                            <label htmlFor="refreshInterval" className={styles.settingLabel}>
-                                Aktualisierungs-Intervall
-                            </label>
-                            <p className={styles.settingDescription}>
-                                Wie oft neue Termine von der Webseite geladen werden (in Minuten)
-                            </p>
-                        </div>
-                        <div className={styles.settingControl}>
-                            <input
-                                type="range"
-                                id="refreshInterval"
-                                min={1}
-                                max={60}
-                                step={1}
-                                value={refreshInterval}
-                                onChange={(e) => setRefreshInterval(Number(e.target.value))}
-                                className={styles.slider}
-                            />
-                            <div className={styles.sliderValue}>
-                                <input
-                                    type="number"
-                                    value={refreshInterval}
-                                    onChange={(e) => setRefreshInterval(Number(e.target.value))}
-                                    min={1}
-                                    max={60}
-                                    className={styles.numberInput}
-                                />
-                                <span>min</span>
-                            </div>
-                        </div>
-                    </div>
                 </section>
 
                 <section className={styles.section}>

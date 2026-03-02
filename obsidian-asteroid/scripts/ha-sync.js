@@ -54,9 +54,16 @@ async function sync() {
 
             // 4. FTP Upload
             if (options.enable_ftp) {
-                console.log('Step 4: Uploading to FTP...');
+                console.log('Step 4: Uploading to FTP (Differential)...');
                 const client = new ftp.Client();
-                client.ftp.verbose = true;
+                // client.ftp.verbose = true; // Set to false for cleaner logs
+
+                const lastSyncFile = '/data/last_sync.json';
+                let lastSyncTime = 0;
+                if (fs.existsSync(lastSyncFile)) {
+                    lastSyncTime = JSON.parse(fs.readFileSync(lastSyncFile, 'utf8')).timestamp;
+                }
+
                 try {
                     await client.access({
                         host: options.ftp_server,
@@ -67,8 +74,33 @@ async function sync() {
                     });
 
                     await client.ensureDir(options.ftp_remote_path);
-                    await client.uploadFromDir(OUTPUT_DIR);
-                    console.log('FTP Upload successful!');
+
+                    // Recursive function to upload only changed files
+                    async function uploadChangedFiles(localDir, remoteDir) {
+                        const items = fs.readdirSync(localDir);
+                        for (const item of items) {
+                            const localPath = path.join(localDir, item);
+                            const remotePath = path.join(remoteDir, item);
+                            const stats = fs.statSync(localPath);
+
+                            if (stats.isDirectory()) {
+                                await client.ensureDir(remotePath);
+                                await uploadChangedFiles(localPath, remotePath);
+                                await client.cd('..'); // Go back up after directory recursion
+                            } else {
+                                if (stats.mtimeMs > lastSyncTime) {
+                                    console.log(`Uploading changed file: ${item}`);
+                                    await client.uploadFrom(localPath, item);
+                                }
+                            }
+                        }
+                    }
+
+                    await uploadChangedFiles(OUTPUT_DIR, options.ftp_remote_path);
+
+                    // Update sync time
+                    fs.writeFileSync(lastSyncFile, JSON.stringify({ timestamp: Date.now() }));
+                    console.log('Differential FTP Upload successful!');
                 } catch (err) {
                     console.error('FTP Upload failed:', err);
                 } finally {

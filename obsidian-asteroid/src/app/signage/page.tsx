@@ -46,14 +46,15 @@ export default function SignagePage() {
         }
     }, []);
 
-    // Initial fetch and periodic refresh
+    // Initial fetch and 60-second polling for live data
     useEffect(() => {
         if (!mounted) return;
         fetchAppointments();
-        const refreshMs = settings.signageRefreshInterval * 60 * 1000;
-        const refreshTimer = setInterval(fetchAppointments, refreshMs);
-        return () => clearInterval(refreshTimer);
-    }, [fetchAppointments, settings.signageRefreshInterval, mounted]);
+
+        // Poll every 60 seconds to check for new data from FTP/HA
+        const pollTimer = setInterval(fetchAppointments, 60000);
+        return () => clearInterval(pollTimer);
+    }, [fetchAppointments, mounted]);
 
     // Update clock
     useEffect(() => {
