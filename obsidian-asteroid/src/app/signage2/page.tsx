@@ -65,7 +65,28 @@ export default function Signage2Page() {
 
     const fetchCustomSettings = useCallback(async () => {
         try {
-            // Test connectivity first
+            // Detect if we are on a static host (FTP) vs Home Assistant Ingress
+            // Static mode if URL ends in .html or if we are not on any Ingress path
+            const isStatic = typeof window !== 'undefined' &&
+                (window.location.pathname.endsWith('.html') ||
+                    !window.location.pathname.includes('/api/ingress/'));
+
+            setLastFetch(new Date().toLocaleTimeString());
+
+            if (isStatic) {
+                console.log('Static mode detected. Fetching settings.json...');
+                const response = await fetch('settings.json', { cache: 'no-store' });
+                if (response.ok) {
+                    const data = await response.json();
+                    setCustomSettings(data.signage2 || data);
+                    setDebugInfo({ mode: 'Static', foundPath: 'settings.json' });
+                } else {
+                    setDebugInfo({ mode: 'Static', error: 'settings.json not found' });
+                }
+                return;
+            }
+
+            // Server mode (Home Assistant)
             let pingStatus = 'Pending';
             let pingRaw = '';
 
@@ -77,13 +98,13 @@ export default function Signage2Page() {
                 pingStatus = 'Failed: ' + e.message;
             }
 
-            // Fetch custom settings
+            // Fetch custom settings from API
             const response = await fetch('../api/custom-settings', { cache: 'no-store' });
-            setLastFetch(new Date().toLocaleTimeString());
-
             const text = await response.text();
+
             if (text.startsWith('<!DOCTYPE')) {
                 setDebugInfo({
+                    mode: 'Server',
                     error: 'API returned HTML (404/Redirect). Are you sure about the path?',
                     pingStatus,
                     pingRaw: pingRaw.substring(0, 30)
@@ -94,6 +115,7 @@ export default function Signage2Page() {
             try {
                 const data = JSON.parse(text);
                 setDebugInfo({
+                    mode: 'Server',
                     ...data._debug,
                     pingStatus,
                     error: response.ok ? null : (data.error || 'API Response Not OK')
@@ -103,6 +125,7 @@ export default function Signage2Page() {
                 }
             } catch (jsonErr) {
                 setDebugInfo({
+                    mode: 'Server',
                     error: 'JSON Parse Error: ' + text.substring(0, 50),
                     pingStatus
                 });
@@ -147,11 +170,15 @@ export default function Signage2Page() {
         visibleStart + VISIBLE_COUNT
     );
 
+    // Detect mode for assets
+    const isStatic = debugInfo?.mode === 'Static';
+
     // Dynamic assets
-    const logoSrc = customSettings.logo ? `/api/custom-media/${customSettings.logo}` : null;
-    const heroSrc = customSettings.heroImage ? `/api/custom-media/${customSettings.heroImage}` : null;
-    const qrSrc = customSettings.qrCode ? `/api/custom-media/${customSettings.qrCode}` : null;
-    const bgUrl = customSettings.backgroundImage && customSettings.backgroundImage !== 'none' ? `url(/api/custom-media/${customSettings.backgroundImage})` : 'none';
+    const assetPath = isStatic ? 'media' : '/api/custom-media';
+    const logoSrc = customSettings.logo ? `${assetPath}/${customSettings.logo}` : null;
+    const heroSrc = customSettings.heroImage ? `${assetPath}/${customSettings.heroImage}` : null;
+    const qrSrc = customSettings.qrCode ? `${assetPath}/${customSettings.qrCode}` : null;
+    const bgUrl = customSettings.backgroundImage && customSettings.backgroundImage !== 'none' ? `url(${assetPath}/${customSettings.backgroundImage})` : 'none';
 
     return (
         <div

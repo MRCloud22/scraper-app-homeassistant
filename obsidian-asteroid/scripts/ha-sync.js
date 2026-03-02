@@ -41,37 +41,77 @@ async function sync() {
             const scraperOutputFile = path.join(__dirname, '../public/appointments.json');
             const rssOutputFile = path.join(__dirname, '../public/rss.xml');
 
-            const exportOutputFile = path.join(OUTPUT_DIR, 'appointments.json');
-            const exportRssFile = path.join(OUTPUT_DIR, 'rss.xml');
+            // Configuration source (prioritize /addon_config)
+            const configBase = fs.existsSync('/addon_config') ? '/addon_config' : '/config';
+            const settingsFile = path.join(configBase, 'obsidian_asteroid/settings.json');
+            const mediaDir = path.join(configBase, 'obsidian_asteroid/media');
+
+            // Find the best export directory
+            const possibleDirs = [
+                path.join(__dirname, '../out'),
+                path.join(__dirname, '../.next_export'),
+                path.join(__dirname, '../dist')
+            ];
+            let activeOutputDir = possibleDirs.find(d => fs.existsSync(d) && fs.readdirSync(d).length > 0) || OUTPUT_DIR;
+
+            console.log(`Step 3: Preparing export (Source: ${activeOutputDir})...`);
 
             // Synchronize files to the export folder for FTP
+            if (!fs.existsSync(activeOutputDir)) {
+                fs.mkdirSync(activeOutputDir, { recursive: true });
+            }
+
+            // Copy scraper data
             if (fs.existsSync(scraperOutputFile)) {
-                if (!fs.existsSync(OUTPUT_DIR)) {
-                    console.log('Re-creating missing export directory...');
-                    fs.mkdirSync(OUTPUT_DIR, { recursive: true });
-                }
+                fs.copyFileSync(scraperOutputFile, path.join(activeOutputDir, 'appointments.json'));
+                console.log('Synchronized appointments.json to export folder.');
+            }
+            if (fs.existsSync(rssOutputFile)) {
+                fs.copyFileSync(rssOutputFile, path.join(activeOutputDir, 'rss.xml'));
+                console.log('Synchronized rss.xml to export folder.');
+            }
 
-                fs.copyFileSync(scraperOutputFile, exportOutputFile);
-                console.log('Synchronized appointments.json to export container.');
+            // Copy settings and media for static board support
+            if (fs.existsSync(settingsFile)) {
+                fs.copyFileSync(settingsFile, path.join(activeOutputDir, 'settings.json'));
+                console.log('Synchronized settings.json to export folder.');
+            }
 
-                if (fs.existsSync(rssOutputFile)) {
-                    fs.copyFileSync(rssOutputFile, exportRssFile);
-                    console.log('Synchronized rss.xml to export container.');
+            if (fs.existsSync(mediaDir)) {
+                const staticMediaDir = path.join(activeOutputDir, 'media');
+                if (!fs.existsSync(staticMediaDir)) fs.mkdirSync(staticMediaDir, { recursive: true });
+
+                const mediaFiles = fs.readdirSync(mediaDir);
+                for (const file of mediaFiles) {
+                    try {
+                        fs.copyFileSync(path.join(mediaDir, file), path.join(staticMediaDir, file));
+                    } catch (e) {
+                        console.error(`Failed to copy media file ${file}:`, e.message);
+                    }
                 }
-            } else {
-                console.warn('Scraper output missing! Check scraper logs.');
+                console.log(`Synchronized ${mediaFiles.length} media files to export folder.`);
             }
 
             // 4. FTP Upload
             if (options.enable_ftp) {
-                console.log('Step 4: Uploading to FTP (Differential)...');
+                console.log('Step 4: Uploading to FTP...');
                 const client = new ftp.Client();
-                // client.ftp.verbose = true; // Set to false for cleaner logs
-
                 const lastSyncFile = '/data/last_sync.json';
-                let lastSyncTime = 0;
+
+                // Version check for force sync
+                const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, '../package.json'), 'utf8'));
+                const currentVersion = pkg.version;
+
+                let lastSyncData = { timestamp: 0, version: '0.0.0' };
                 if (fs.existsSync(lastSyncFile)) {
-                    lastSyncTime = JSON.parse(fs.readFileSync(lastSyncFile, 'utf8')).timestamp;
+                    try {
+                        lastSyncData = JSON.parse(fs.readFileSync(lastSyncFile, 'utf8'));
+                    } catch (e) { }
+                }
+
+                const isVersionUpgrade = currentVersion !== lastSyncData.version;
+                if (isVersionUpgrade) {
+                    console.log(`Version changed (${lastSyncData.version} -> ${currentVersion}). Forcing full sync.`);
                 }
 
                 try {
@@ -89,6 +129,8 @@ async function sync() {
                     async function uploadChangedFiles(localDir, remoteDir) {
                         const items = fs.readdirSync(localDir);
                         for (const item of items) {
+                            if (item === 'node_modules' || item === '.git') continue;
+
                             const localPath = path.join(localDir, item);
                             const remotePath = path.join(remoteDir, item);
                             const stats = fs.statSync(localPath);
@@ -96,21 +138,25 @@ async function sync() {
                             if (stats.isDirectory()) {
                                 await client.ensureDir(remotePath);
                                 await uploadChangedFiles(localPath, remotePath);
-                                await client.cd('..'); // Go back up after directory recursion
+                                await client.cd('..');
                             } else {
-                                if (stats.mtimeMs > lastSyncTime) {
-                                    console.log(`Uploading changed file: ${item}`);
+                                // Upload if newer than last sync OR if version changed
+                                if (isVersionUpgrade || stats.mtimeMs > lastSyncData.timestamp) {
+                                    console.log(`Uploading: ${item}${isVersionUpgrade ? ' (Force)' : ''}`);
                                     await client.uploadFrom(localPath, item);
                                 }
                             }
                         }
                     }
 
-                    await uploadChangedFiles(OUTPUT_DIR, options.ftp_remote_path);
+                    await uploadChangedFiles(activeOutputDir, options.ftp_remote_path);
 
-                    // Update sync time
-                    fs.writeFileSync(lastSyncFile, JSON.stringify({ timestamp: Date.now() }));
-                    console.log('Differential FTP Upload successful!');
+                    // Update sync time and version
+                    fs.writeFileSync(lastSyncFile, JSON.stringify({
+                        timestamp: Date.now(),
+                        version: currentVersion
+                    }));
+                    console.log('FTP Upload successful!');
                 } catch (err) {
                     console.error('FTP Upload failed:', err);
                 } finally {

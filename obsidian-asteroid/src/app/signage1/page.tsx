@@ -46,6 +46,19 @@ export default function Signage1Page() {
 
     const fetchCustomSettings = useCallback(async () => {
         try {
+            const isStatic = typeof window !== 'undefined' &&
+                (window.location.pathname.endsWith('.html') ||
+                    !window.location.pathname.includes('/api/ingress/'));
+
+            if (isStatic) {
+                const response = await fetch('settings.json', { cache: 'no-store' });
+                if (response.ok) {
+                    const data = await response.json();
+                    setCustomSettings(data.signage1 || data);
+                }
+                return;
+            }
+
             const response = await fetch('../api/custom-settings', { cache: 'no-store' });
             if (response.ok) {
                 const data = await response.json();
@@ -90,9 +103,16 @@ export default function Signage1Page() {
         visibleStart + VISIBLE_COUNT
     );
 
+    // Detect static mode
+    const isStatic = typeof window !== 'undefined' &&
+        (window.location.pathname.endsWith('.html') ||
+            !window.location.pathname.includes('/api/ingress/'));
+
     // Dynamic assets
-    const logoSrc = customSettings.logo ? `/api/custom-media/${customSettings.logo}` : null;
-    const bgUrl = customSettings.backgroundImage ? `url(/api/custom-media/${customSettings.backgroundImage})` : 'none';
+    const assetPath = isStatic ? 'media' : '/api/custom-media';
+    const logoSrc = customSettings.logo ? `${assetPath}/${customSettings.logo}` : null;
+    const bgUrl = customSettings.backgroundImage ? `url(${assetPath}/${customSettings.backgroundImage})` : 'none';
+    const qrSrc = customSettings.qrCode ? `${assetPath}/${customSettings.qrCode}` : null;
 
     return (
         <div className={styles.container} style={{ backgroundImage: bgUrl, backgroundSize: 'cover' }}>
@@ -151,8 +171,8 @@ export default function Signage1Page() {
             <footer className={styles.footer}>
                 <div className={styles.footerCircles}>
                     <div className={styles.qrCircle}>
-                        {customSettings.qrCode ? (
-                            <img src={`/api/custom-media/${customSettings.qrCode}`} alt="QR" style={{ width: '120px', height: '120px' }} />
+                        {qrSrc ? (
+                            <img src={qrSrc} alt="QR" style={{ width: '120px', height: '120px' }} />
                         ) : (
                             <QrCode size={120} color="#5D7266" />
                         )}
