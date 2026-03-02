@@ -1,0 +1,204 @@
+.container {
+    width: 100vw;
+    height: 100vh;
+    background-color: #EDE9E1;
+    color: #333;
+    font-family: 'Montserrat', sans-serif;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+
+.backgroundDecor {
+    position: absolute;
+    top: 20%;
+    left: -10%;
+    width: 80vw;
+    height: 80vw;
+    background-color: #5D7266;
+    border-radius: 50%;
+    opacity: 0.9;
+    z-index: 1;
+}
+
+.backgroundDecor2 {
+    position: absolute;
+    bottom: -5%;
+    right: -5%;
+    width: 40vw;
+    height: 40vw;
+    background-color: #D6E3D8;
+    border-radius: 50%;
+    z-index: 1;
+}
+
+.header {
+    height: 12vh;
+    padding: 3rem 4rem;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    position: relative;
+    z-index: 5;
+}
+
+.logoIcon {
+    width: 70px;
+    height: auto;
+    margin-right: 1.5rem;
+}
+
+.logoText h1 {
+    font-size: 2rem;
+    color: #5D7266;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+}
+
+.logoText p {
+    font-size: 1.4rem;
+    color: #C5A059;
+    margin: 0;
+    font-weight: 500;
+}
+
+.main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 4rem;
+    position: relative;
+    z-index: 5;
+}
+
+.title {
+    color: white;
+    font-size: 3.5rem;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    margin-bottom: 4rem;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.appointmentList {
+    width: 100%;
+    max-width: 850px;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.appointmentPill {
+    background-color: white;
+    border-radius: 100px;
+    /* Pill shape */
+    padding: 1rem 3rem 1rem 1rem;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    animation: slideIn 0.6s ease-out forwards;
+    opacity: 0;
+}
+
+.pillImage {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-right: 2.5rem;
+    flex-shrink: 0;
+    border: 3px solid white;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.pillImage img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.pillContent {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.time {
+    font-size: 1.4rem;
+    color: #5D7266;
+    font-weight: 700;
+    margin-bottom: 0.2rem;
+}
+
+.treatment {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.price {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #333;
+    min-width: 100px;
+    text-align: right;
+}
+
+.footer {
+    height: 15vh;
+    padding: 2rem 4rem;
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-end;
+    position: relative;
+    z-index: 5;
+}
+
+.qrSection {
+    background-color: transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.qrContainer {
+    padding: 1rem;
+    background-color: white;
+    border-radius: 1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.qrInfoText {
+    font-size: 1.2rem;
+    color: #5D7266;
+    font-weight: 600;
+    text-align: right;
+    margin-bottom: 0.5rem;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(50px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.emptyState {
+    font-size: 2rem;
+    color: white;
+    text-align: center;
+    padding: 5rem;
+}

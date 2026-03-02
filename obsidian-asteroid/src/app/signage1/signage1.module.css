@@ -1,0 +1,227 @@
+.container {
+    width: 100vw;
+    height: 100vh;
+    background-color: #EDE9E1;
+    color: #333;
+    font-family: 'Inter', sans-serif;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Typography from Google Fonts if possible, otherwise system */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+
+.container {
+    font-family: 'Montserrat', sans-serif;
+}
+
+.header {
+    height: 15vh;
+    padding: 4rem 4rem 2rem;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.logoIcon {
+    width: 120px;
+    height: auto;
+    margin-right: 2rem;
+}
+
+.logoText h1 {
+    font-size: 3rem;
+    color: #5D7266;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.logoText p {
+    font-size: 2rem;
+    color: #C5A059;
+    margin: 0;
+    font-weight: 500;
+}
+
+.main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4rem;
+}
+
+.circleContainer {
+    width: 90vw;
+    height: 90vw;
+    /* Circle on portrait */
+    max-height: 55vh;
+    background-color: #5D7266;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem;
+    color: white;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    position: relative;
+    z-index: 2;
+}
+
+.title {
+    font-size: 3.5rem;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    margin-bottom: 3rem;
+    text-align: center;
+    font-weight: 600;
+}
+
+.appointmentsTable {
+    width: 85%;
+    border-collapse: collapse;
+}
+
+.tableHeader {
+    border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.tableHeader th {
+    padding: 1.5rem 1rem;
+    text-align: left;
+    font-size: 1.8rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 500;
+}
+
+.appointmentRow {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    animation: fadeIn 0.5s ease forwards;
+}
+
+.appointmentRow td {
+    padding: 1.5rem 1rem;
+    font-size: 1.8rem;
+}
+
+.time {
+    font-weight: 600;
+}
+
+.treatment {
+    font-weight: 400;
+}
+
+.price {
+    text-align: right;
+    font-weight: 500;
+}
+
+.footer {
+    height: 30vh;
+    padding: 2rem 4rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    position: relative;
+}
+
+.footerCircles {
+    display: flex;
+    gap: 3rem;
+}
+
+.qrCircle {
+    width: 250px;
+    height: 250px;
+    background-color: white;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+}
+
+.qrImage {
+    width: 140px;
+    height: 140px;
+    background-color: #eee;
+    /* Placeholder */
+    margin-bottom: 1rem;
+}
+
+.qrText {
+    font-size: 1.2rem;
+    text-align: center;
+    color: #5D7266;
+    font-weight: 600;
+}
+
+.infoCircle {
+    width: 220px;
+    height: 220px;
+    background-color: #C5A059;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2.5rem;
+    color: white;
+    font-size: 1.6rem;
+    text-align: center;
+    font-weight: 600;
+    line-height: 1.4;
+    box-shadow: 0 10px 25px rgba(197, 160, 89, 0.3);
+}
+
+.mintCircle {
+    width: 320px;
+    height: 320px;
+    background-color: #D6E3D8;
+    border-radius: 50%;
+    position: absolute;
+    bottom: -100px;
+    right: -50px;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 5rem;
+}
+
+.mintCircle .qrImage {
+    width: 120px;
+    height: 120px;
+}
+
+.mintCircle .qrText {
+    font-size: 1rem;
+    color: #5D7266;
+}
+
+.emptyState {
+    font-size: 2.5rem;
+    text-align: center;
+    max-width: 80%;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
