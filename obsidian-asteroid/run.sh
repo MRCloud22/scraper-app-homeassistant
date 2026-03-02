@@ -6,6 +6,9 @@ bashio::log.info "NPM version: $(npm --version)"
 
 cd /app
 
+bashio::log.info "Building Next.js for server mode..."
+npm run build
+
 bashio::log.info "Launching background sync service..."
 node /app/scripts/ha-sync.js &
 

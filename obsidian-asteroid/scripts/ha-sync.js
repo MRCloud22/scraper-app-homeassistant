@@ -57,16 +57,27 @@ async function sync() {
             console.log('Step 2: Running Scraper...');
             execSync('node /app/scripts/scrape.js', { stdio: 'inherit' });
 
+            // 2.5 Generate RSS Feed
+            console.log('Step 2.5: Generating RSS Feed...');
+            execSync('node /app/scripts/generate-rss.js', { stdio: 'inherit' });
+
             // 3. Update data files
             const scraperOutputFile = path.join(__dirname, '../public/appointments.json');
-            const exportOutputFile = path.join(OUTPUT_DIR, 'appointments.json');
+            const rssOutputFile = path.join(__dirname, '../public/rss.xml');
 
-            // The scraper already writes to ../public/appointments.json
-            // We just need to ensure it's also in the export folder for FTP
+            const exportOutputFile = path.join(OUTPUT_DIR, 'appointments.json');
+            const exportRssFile = path.join(OUTPUT_DIR, 'rss.xml');
+
+            // Synchronize files to the export folder for FTP
             if (fs.existsSync(scraperOutputFile)) {
                 if (fs.existsSync(OUTPUT_DIR)) {
                     fs.copyFileSync(scraperOutputFile, exportOutputFile);
                     console.log('Synchronized appointments.json to export container.');
+
+                    if (fs.existsSync(rssOutputFile)) {
+                        fs.copyFileSync(rssOutputFile, exportRssFile);
+                        console.log('Synchronized rss.xml to export container.');
+                    }
                 } else {
                     console.warn('Export directory (out) missing. Skipping copy to export.');
                 }
