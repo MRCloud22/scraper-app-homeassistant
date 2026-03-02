@@ -29,8 +29,7 @@ interface CustomSettings {
     theme?: string;
 }
 
-const VERSION = "0.4.26";
-
+const VERSION = "0.4.27";
 
 export default function Signage2Page() {
     const { settings } = useSettings();
@@ -65,77 +64,41 @@ export default function Signage2Page() {
     }, []);
 
     const fetchCustomSettings = useCallback(async () => {
+        setLastFetch(new Date().toLocaleTimeString());
+
+        // Strategy: always try the Next.js API first (HA Ingress mode).
+        // If the API responds with 404 or a network error, fall back to
+        // fetching settings.json directly from the same origin (static/FTP mode).
         try {
-            // Detect if we are on a static host (FTP) vs Home Assistant Ingress
-            // Static mode if URL ends in .html or if we are not on any Ingress path
-            const isStatic = typeof window !== 'undefined' &&
-                (window.location.pathname.endsWith('.html') ||
-                    !window.location.pathname.includes('/api/ingress/'));
+            const apiRes = await fetch('../api/custom-settings', { cache: 'no-store' });
+            const text = await apiRes.text();
 
-            setLastFetch(new Date().toLocaleTimeString());
-
-            if (isStatic) {
-                console.log('Static mode detected. Fetching settings.json...');
-                const response = await fetch('settings.json', { cache: 'no-store' });
-                if (response.ok) {
-                    const data = await response.json();
-                    setCustomSettings(data.signage2 || data);
-                    setDebugInfo({ mode: 'Static', foundPath: 'settings.json' });
-                } else {
-                    setDebugInfo({ mode: 'Static', error: 'settings.json not found' });
-                }
-                return;
-            }
-
-            // Server mode (Home Assistant)
-            let pingStatus = 'Pending';
-            let pingRaw = '';
-
-            try {
-                const pingRes = await fetch('../api/ping', { cache: 'no-store' });
-                pingStatus = pingRes.status === 200 ? 'OK' : 'Err ' + pingRes.status;
-                pingRaw = await pingRes.text();
-            } catch (e: any) {
-                pingStatus = 'Failed: ' + e.message;
-            }
-
-            // Fetch custom settings from API
-            const response = await fetch('../api/custom-settings', { cache: 'no-store' });
-            const text = await response.text();
-
-            if (text.startsWith('<!DOCTYPE')) {
-                setDebugInfo({
-                    mode: 'Server',
-                    error: 'API returned HTML (404/Redirect). Are you sure about the path?',
-                    pingStatus,
-                    pingRaw: pingRaw.substring(0, 30)
-                });
-                return;
-            }
-
-            try {
+            // If the API returned HTML it's a redirect/404 — not our API
+            if (apiRes.ok && !text.startsWith('<!DOCTYPE')) {
                 const data = JSON.parse(text);
-                setDebugInfo({
-                    mode: 'Server',
-                    ...data._debug,
-                    pingStatus,
-                    error: response.ok ? null : (data.error || 'API Response Not OK')
-                });
-                if (response.ok) {
-                    setCustomSettings(data.signage2 || data);
-                }
-            } catch (jsonErr) {
-                setDebugInfo({
-                    mode: 'Server',
-                    error: 'JSON Parse Error: ' + text.substring(0, 50),
-                    pingStatus
-                });
+                setCustomSettings(data.signage2 || data);
+                setDebugInfo({ mode: 'Server (API)', foundPath: '../api/custom-settings' });
+                return;
             }
-        } catch (error: any) {
-            console.error('Frontend Fetch Error:', error);
-            setDebugInfo({ error: 'Frontend Fetch Failed: ' + error.message });
+        } catch (_apiErr) {
+            // API unreachable — we are probably in static/FTP mode
+        }
+
+        // Fallback: static file on FTP server (or /public during dev)
+        try {
+            const staticRes = await fetch('settings.json', { cache: 'no-store' });
+            if (staticRes.ok) {
+                const data = await staticRes.json();
+                setCustomSettings(data.signage2 || data);
+                setDebugInfo({ mode: 'Static (FTP)', foundPath: 'settings.json' });
+            } else {
+                setDebugInfo({ mode: 'Static (FTP)', error: 'settings.json not found' });
+            }
+        } catch (staticErr: any) {
+            setDebugInfo({ mode: 'Unknown', error: staticErr.message });
         }
     }, []);
+
 
     useEffect(() => {
         if (!mounted) return;
@@ -171,11 +134,11 @@ export default function Signage2Page() {
         visibleStart + VISIBLE_COUNT
     );
 
-    // Detect mode for assets
-    const isStatic = debugInfo?.mode === 'Static';
+    // Detect mode for assets (Static = FTP server, Server = HA Ingress via API)
+    const isStatic = debugInfo?.mode?.startsWith('Static');
 
-    // Dynamic assets
-    const assetPath = isStatic ? 'media' : '/api/custom-media';
+    // Dynamic assets — static uses relative path, HA uses relative API URL
+    const assetPath = isStatic ? 'media' : '../api/custom-media';
     const logoSrc = customSettings.logo ? `${assetPath}/${customSettings.logo}` : null;
     const heroSrc = customSettings.heroImage ? `${assetPath}/${customSettings.heroImage}` : null;
     const qrSrc = customSettings.qrCode ? `${assetPath}/${customSettings.qrCode}` : null;
