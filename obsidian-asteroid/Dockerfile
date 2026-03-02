@@ -41,10 +41,9 @@ RUN npm run build
 
 # Build the Next.js application for static export (FTP Sync)
 # Note: Next.js static export fails if dynamic API routes exist.
-# We temporarily move them out of the way for this build phase.
-ENV NEXT_PUBLIC_EXPORT=true
+# We use NEXT_PUBLIC_EXPORT=true ONLY for this build step.
 RUN mv src/app/api /tmp/api_backup && \
-  npm run build && \
+  NEXT_PUBLIC_EXPORT=true npm run build && \
   mv /tmp/api_backup src/app/api
 
 # The static export will be in .next_export/ (controlled by distDir in next.config.ts)
