@@ -29,7 +29,7 @@ interface CustomSettings {
     theme?: string;
 }
 
-const VERSION = "0.4.30";
+const VERSION = "0.4.31";
 
 export default function Signage2Page() {
     const { settings } = useSettings();
@@ -81,6 +81,8 @@ export default function Signage2Page() {
                 setDebugInfo({
                     mode: 'Server (API)',
                     foundPath: _debug?.foundPath || '../api/custom-settings',
+                    mtime: _debug?.mtime,
+                    scanned: _debug?.scanned,
                     keys: _debug?.keys
                 });
                 return;
@@ -239,11 +241,11 @@ export default function Signage2Page() {
             </footer>
             {/* Version & Debug */}
             <div className={styles.versionTag}>
-                v{VERSION} | Keys: {Object.keys(customSettings).join(', ') || 'none'} | Last: {lastFetch}
+                v{VERSION} | Title: "{customSettings.title || '(none)'}" | FileModified: {debugInfo?.mtime || '?'}
                 <br />
-                Title: "{customSettings.title || '(none)'}" | Mode: {debugInfo?.mode || '?'} | Path: {debugInfo?.foundPath || 'NONE'}
+                Path: {debugInfo?.foundPath || 'NONE'}
                 <br />
-                {debugInfo?.error ? `ERR: ${debugInfo.error}` : 'OK'}
+                {debugInfo?.scanned || 'scanning...'}
             </div>
         </div>
     );
