@@ -8,26 +8,8 @@ export async function generateStaticParams() {
     return [];
 }
 
-// Discover the config directory — run.sh writes the path to /tmp/config_dir_path
-function getMediaDir(): string {
-    try {
-        if (fs.existsSync('/tmp/config_dir_path')) {
-            const configDir = fs.readFileSync('/tmp/config_dir_path', 'utf8').trim();
-            return path.join(configDir, 'media');
-        }
-    } catch { }
-
-    // Fallback: scan for the directory ourselves
-    const base = '/config/addons_config';
-    if (fs.existsSync(base)) {
-        const dirs = fs.readdirSync(base).filter(d =>
-            d.endsWith('_obsidian_asteroid') && fs.statSync(path.join(base, d)).isDirectory()
-        );
-        if (dirs.length > 0) return path.join(base, dirs[0], 'media');
-    }
-
-    return '/addon_config/media'; // last resort fallback
-}
+// Config is at /config/obsidian_asteroid/ — mapped via "map: config:rw"
+const MEDIA_DIR = '/config/obsidian_asteroid/media';
 
 export async function GET(
     request: NextRequest,
@@ -37,8 +19,7 @@ export async function GET(
 
     // Prevent path traversal attacks
     const safeName = path.basename(filename);
-    const mediaDir = getMediaDir();
-    const mediaPath = path.join(mediaDir, safeName);
+    const mediaPath = path.join(MEDIA_DIR, safeName);
 
     try {
         if (fs.existsSync(mediaPath)) {

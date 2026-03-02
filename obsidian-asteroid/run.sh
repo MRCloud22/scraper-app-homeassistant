@@ -8,33 +8,15 @@ cd /app
 
 bashio::log.info "Using pre-built Next.js assets from Docker image..."
 
-# Discover the real config directory
-# HA maps /config via config.yaml "map: config:rw"
-# The user's addon config lives at /config/addons_config/HASH_slug/
-# We find it dynamically by looking for *_obsidian_asteroid
-CONFIG_DIR=""
-if [ -d "/config/addons_config" ]; then
-    FOUND_DIR=$(find /config/addons_config -maxdepth 1 -type d -name "*_obsidian_asteroid" | head -1)
-    if [ -n "$FOUND_DIR" ]; then
-        CONFIG_DIR="$FOUND_DIR"
-        bashio::log.info "Found config directory: ${CONFIG_DIR}"
-    fi
-fi
-
-# Fallback to /addon_config if the above didn't work
-if [ -z "$CONFIG_DIR" ]; then
-    CONFIG_DIR="/addon_config"
-    bashio::log.info "Using fallback config directory: ${CONFIG_DIR}"
-fi
-
-# Write the discovered path so Node.js scripts can read it
-echo "$CONFIG_DIR" > /tmp/config_dir_path
-
+# Config directory: /config is mapped via "map: config:rw" in config.yaml
+# and accessible via Samba share "config" on the host.
+# We use a subdirectory to keep things organized.
+CONFIG_DIR="/config/obsidian_asteroid"
 MEDIA_DIR="${CONFIG_DIR}/media"
 
 bashio::log.info "Configuration directory: ${CONFIG_DIR}"
 
-# Ensure media directory exists
+# Ensure directories exist
 mkdir -p "${MEDIA_DIR}"
 
 # Provide default assets if media directory is empty

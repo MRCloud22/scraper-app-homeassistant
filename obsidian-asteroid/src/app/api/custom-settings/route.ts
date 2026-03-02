@@ -4,42 +4,22 @@ import path from 'path';
 
 export const dynamic = 'force-dynamic';
 
-// Discover the config directory — run.sh writes the path to /tmp/config_dir_path
-function getConfigDir(): string {
-    try {
-        if (fs.existsSync('/tmp/config_dir_path')) {
-            return fs.readFileSync('/tmp/config_dir_path', 'utf8').trim();
-        }
-    } catch { }
-
-    // Fallback: scan for the directory ourselves
-    const base = '/config/addons_config';
-    if (fs.existsSync(base)) {
-        const dirs = fs.readdirSync(base).filter(d =>
-            d.endsWith('_obsidian_asteroid') && fs.statSync(path.join(base, d)).isDirectory()
-        );
-        if (dirs.length > 0) return path.join(base, dirs[0]);
-    }
-
-    return '/addon_config'; // last resort fallback
-}
+// Config is at /config/obsidian_asteroid/ — mapped via "map: config:rw"
+const CONFIG_DIR = '/config/obsidian_asteroid';
+const SETTINGS_PATH = path.join(CONFIG_DIR, 'settings.json');
 
 export async function GET() {
     try {
-        const configDir = getConfigDir();
-        const settingsPath = path.join(configDir, 'settings.json');
-
-        if (fs.existsSync(settingsPath)) {
-            const data = fs.readFileSync(settingsPath, 'utf8');
+        if (fs.existsSync(SETTINGS_PATH)) {
+            const data = fs.readFileSync(SETTINGS_PATH, 'utf8');
             const parsed = JSON.parse(data);
-            const stat = fs.statSync(settingsPath);
+            const stat = fs.statSync(SETTINGS_PATH);
             const mtime = new Date(stat.mtimeMs).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
             return NextResponse.json({
                 ...parsed,
                 _debug: {
-                    foundPath: settingsPath,
-                    configDir,
+                    foundPath: SETTINGS_PATH,
                     mtime,
                     keys: Object.keys(parsed)
                 }
@@ -47,7 +27,7 @@ export async function GET() {
         }
 
         return NextResponse.json(
-            { error: 'Settings not found', _debug: { checkedPath: settingsPath, configDir } },
+            { error: 'Settings not found', _debug: { checkedPath: SETTINGS_PATH } },
             { status: 404 }
         );
     } catch (err: any) {
