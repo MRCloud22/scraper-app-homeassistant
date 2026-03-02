@@ -14,67 +14,71 @@ async function sync() {
         return;
     }
 
-    const options = JSON.parse(fs.readFileSync(OPTIONS_FILE, 'utf8'));
-
-    if (!options.enable_ftp) {
-        console.log('FTP Upload is disabled. Sync service will exit.');
-        return;
+    // 1. Initial Build (once at startup to save resources)
+    console.log('Step 1: Initial build for static export...');
+    const buildEnv = {
+        ...process.env,
+        NEXT_PUBLIC_EXPORT: 'true',
+        NEXT_PUBLIC_BASE_PATH: '' // Default to root
+    };
+    try {
+        execSync('npm run build', { stdio: 'inherit', env: buildEnv });
+    } catch (err) {
+        console.error('Initial build failed:', err);
     }
-
-    const intervalMinutes = options.sync_interval || 60;
-    console.log(`Sync interval: ${intervalMinutes} minutes.`);
 
     while (true) {
         try {
-            console.log(`[${new Date().toLocaleString()}] Starting periodic sync...`);
+            // Re-read options to pick up interval or credential changes
+            const options = JSON.parse(fs.readFileSync(OPTIONS_FILE, 'utf8'));
+            const intervalMinutes = options.sync_interval || 60;
 
-            // 1. Run Scraper
-            console.log('Step 1: Running Scraper...');
+            console.log(`[${new Date().toLocaleString()}] Starting periodic sync (Interval: ${intervalMinutes} min)...`);
+
+            // 2. Run Scraper
+            console.log('Step 2: Running Scraper...');
             execSync('node /app/scripts/scrape.js', { stdio: 'inherit' });
 
-            // 2. Build for static export
-            console.log('Step 2: Building for static export...');
-            // Ensure no basePath is used for root hosting
-            const buildEnv = {
-                ...process.env,
-                NEXT_PUBLIC_EXPORT: 'true',
-                NEXT_PUBLIC_BASE_PATH: ''
-            };
-            execSync('npm run build', { stdio: 'inherit', env: buildEnv });
+            // 3. Update export folder with new data
+            // Copy the new appointments.json to the static export folder
+            const scraperOutputFile = path.join(__dirname, '../public/appointments.json');
+            const exportOutputFile = path.join(OUTPUT_DIR, 'appointments.json');
+            if (fs.existsSync(scraperOutputFile)) {
+                fs.copyFileSync(scraperOutputFile, exportOutputFile);
+                console.log('Updated appointments.json in export folder.');
+            }
 
-            // 3. FTP Upload
-            console.log('Step 3: Uploading to FTP...');
-            const client = new ftp.Client();
-            client.ftp.verbose = true;
-            try {
-                await client.access({
-                    host: options.ftp_server,
-                    user: options.ftp_user,
-                    password: options.ftp_password,
-                    port: options.ftp_port || 21,
-                    secure: false // Most simple FTP servers don't use TLS, user can update this if needed
-                });
+            // 4. FTP Upload
+            if (options.enable_ftp) {
+                console.log('Step 4: Uploading to FTP...');
+                const client = new ftp.Client();
+                client.ftp.verbose = true;
+                try {
+                    await client.access({
+                        host: options.ftp_server,
+                        user: options.ftp_user,
+                        password: options.ftp_password,
+                        port: options.ftp_port || 21,
+                        secure: false
+                    });
 
-                console.log(`Ensuring remote directory: ${options.ftp_remote_path}`);
-                await client.ensureDir(options.ftp_remote_path);
-
-                console.log(`Uploading contents of ${OUTPUT_DIR} to ${options.ftp_remote_path}`);
-                await client.uploadFromDir(OUTPUT_DIR);
-
-                console.log('FTP Upload successful!');
-            } catch (err) {
-                console.error('FTP Upload failed:', err);
-            } finally {
-                client.close();
+                    await client.ensureDir(options.ftp_remote_path);
+                    await client.uploadFromDir(OUTPUT_DIR);
+                    console.log('FTP Upload successful!');
+                } catch (err) {
+                    console.error('FTP Upload failed:', err);
+                } finally {
+                    client.close();
+                }
             }
 
             console.log(`[${new Date().toLocaleString()}] Sync completed. Waiting ${intervalMinutes} minutes...`);
+            // Wait for the next interval
+            await new Promise(resolve => setTimeout(resolve, intervalMinutes * 60 * 1000));
         } catch (error) {
-            console.error('Sync failed with error:', error);
+            console.error('Sync loop error:', error);
+            await new Promise(resolve => setTimeout(resolve, 60000)); // Wait 1 min on error
         }
-
-        // Wait for the next interval
-        await new Promise(resolve => setTimeout(resolve, intervalMinutes * 60 * 1000));
     }
 }
 

@@ -41,11 +41,9 @@ export default function Home() {
     setError(null);
 
     try {
-      const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
-      const cacheBuster = `?t=${Date.now()}`;
-
       // Fetch from the static JSON file (updated by the background sync service)
-      const response = await fetch(`${basePath}/appointments.json${cacheBuster}`, { cache: 'no-store' });
+      // Using relative path './' to automatically handle HA Ingress and Root hosting
+      const response = await fetch('./appointments.json', { cache: 'no-store' });
 
       const data: ApiResponse = await response.json();
       console.log('Fetched data:', data);

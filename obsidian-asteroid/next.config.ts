@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
   // basePath is now dynamic based on the environment variable
   basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
   assetPrefix: process.env.NEXT_PUBLIC_BASE_PATH ? `${process.env.NEXT_PUBLIC_BASE_PATH}/` : '',
+  trailingSlash: true,
   images: {
     unoptimized: true,
   },
