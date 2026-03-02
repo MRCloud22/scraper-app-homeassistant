@@ -6,9 +6,9 @@ const { execSync } = require('child_process');
 const OPTIONS_FILE = '/data/options.json';
 
 // The REAL static build output from the Dockerfile (NEXT_PUBLIC_EXPORT=true npm run build)
-// With output: 'export', Next.js puts HTML/CSS/JS files in out/ directory by default.
-// The .next_export directory was just the temporary build cache for the static build.
-const STATIC_BUILD_DIR = path.join(__dirname, '../out');
+// next.config.ts sets distDir: '.next_export' when NEXT_PUBLIC_EXPORT=true
+// With output: 'export' and a custom distDir, Next.js puts files in that distDir.
+const STATIC_BUILD_DIR = path.join(__dirname, '../.next_export');
 
 async function sync() {
     console.log('--- Starting Sync Service ---');

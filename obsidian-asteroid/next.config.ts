@@ -5,8 +5,9 @@ const nextConfig: NextConfig = {
   distDir: process.env.NEXT_PUBLIC_EXPORT === 'true' ? '.next_export' : '.next',
   // Use static export ONLY for FTP sync, otherwise use server mode for HA API
   output: process.env.NEXT_PUBLIC_EXPORT === 'true' ? 'export' : undefined,
-  // Ensure directory structures work (/signage/ instead of signage.html)
-  trailingSlash: false,
+  // Ensure directory structures work (/signage/index.html instead of signage.html)
+  // This is required so the FTP sync replaces the old index.html
+  trailingSlash: true,
   // Use root as base to satisfy both HA Ingress and Root FTP
   basePath: '',
   assetPrefix: '',
