@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+
 .container {
     width: 100vw;
     height: 100vh;
@@ -9,8 +11,6 @@
     display: flex;
     flex-direction: column;
 }
-
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
 
 .backgroundDecor {
     position: absolute;

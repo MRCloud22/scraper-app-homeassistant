@@ -1,9 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+
 .container {
     width: 100vw;
     height: 100vh;
     background-color: #EDE9E1;
     color: #333;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Montserrat', sans-serif;
     overflow: hidden;
     position: relative;
     display: flex;
@@ -11,11 +13,6 @@
 }
 
 /* Typography from Google Fonts if possible, otherwise system */
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
-
-.container {
-    font-family: 'Montserrat', sans-serif;
-}
 
 .header {
     height: 15vh;
