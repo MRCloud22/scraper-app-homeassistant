@@ -79,8 +79,9 @@ export default function Signage2Page() {
         }
 
         // Fallback: static file on FTP server
+        // Page is at /signage2/ so settings.json is one level up: ../settings.json
         try {
-            const staticRes = await fetch('settings.json', { cache: 'no-store' });
+            const staticRes = await fetch('../settings.json', { cache: 'no-store' });
             if (staticRes.ok) {
                 const data = await staticRes.json();
                 setCustomSettings(data.signage2 || data);
@@ -130,7 +131,7 @@ export default function Signage2Page() {
 
     // Dynamic assets — static uses relative path, HA uses relative API URL
     // Cache-busting: append ?t= to image URLs so browser refetches on each settings poll
-    const assetPath = isStaticMode ? 'media' : '../api/custom-media';
+    const assetPath = isStaticMode ? '../media' : '../api/custom-media';
     const cacheBust = `?t=${Math.floor(Date.now() / 60000)}`; // changes every minute
     const logoSrc = customSettings.logo ? `${assetPath}/${customSettings.logo}${cacheBust}` : null;
     const heroSrc = customSettings.heroImage ? `${assetPath}/${customSettings.heroImage}${cacheBust}` : null;
