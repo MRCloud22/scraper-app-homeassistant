@@ -46,7 +46,7 @@ export default function Signage1Page() {
 
     const fetchCustomSettings = useCallback(async () => {
         try {
-            const response = await fetch('/api/custom-settings', { cache: 'no-store' });
+            const response = await fetch('../api/custom-settings', { cache: 'no-store' });
             if (response.ok) {
                 const data = await response.json();
                 setCustomSettings(data.signage1 || data); // Support nesting or flat

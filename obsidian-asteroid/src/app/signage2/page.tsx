@@ -29,7 +29,7 @@ interface CustomSettings {
     theme?: string;
 }
 
-const VERSION = "0.4.21";
+const VERSION = "0.4.22";
 
 export default function Signage2Page() {
     const { settings } = useSettings();
@@ -70,7 +70,7 @@ export default function Signage2Page() {
             let pingRaw = '';
 
             try {
-                const pingRes = await fetch('/api/ping', { cache: 'no-store' });
+                const pingRes = await fetch('../api/ping', { cache: 'no-store' });
                 pingStatus = pingRes.status === 200 ? 'OK' : 'Err ' + pingRes.status;
                 pingRaw = await pingRes.text();
             } catch (e: any) {
@@ -78,7 +78,7 @@ export default function Signage2Page() {
             }
 
             // Fetch custom settings
-            const response = await fetch('/api/custom-settings', { cache: 'no-store' });
+            const response = await fetch('../api/custom-settings', { cache: 'no-store' });
             setLastFetch(new Date().toLocaleTimeString());
 
             const text = await response.text();

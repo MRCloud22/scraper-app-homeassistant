@@ -36,15 +36,19 @@ COPY . .
 RUN mkdir -p public && echo '{"appointments":[],"count":0,"lastUpdated":""}' > public/appointments.json
 COPY . .
 
-# Build the Next.js application for server mode (HA UI)
-RUN npm run build
-
-# Build the Next.js application for static export (FTP Sync)
-# Note: Next.js static export fails if dynamic API routes exist.
-# We use NEXT_PUBLIC_EXPORT=true ONLY for this build step.
+# 1. Build the Next.js application for static export (FTP Sync)
+# We move API folder temporarily because static export fails with dynamic routes
 RUN mv src/app/api /tmp/api_backup && \
   NEXT_PUBLIC_EXPORT=true npm run build && \
-  mv /tmp/api_backup src/app/api
+  mv /tmp/api_backup src/app/api && \
+  mv .next_export /tmp/static_export_backup
+
+# 2. Build the Next.js application for server mode (HA UI) 
+# Clear .next cache to ensure no interference from the static build metadata
+RUN rm -rf .next && npm run build
+
+# 3. Restore static export
+RUN mv /tmp/static_export_backup .next_export
 
 # The static export will be in .next_export/ (controlled by distDir in next.config.ts)
 # After build, we need to run 'next export' equivalent - in Next 15+ this happens during build
