@@ -29,7 +29,7 @@ interface CustomSettings {
     theme?: string;
 }
 
-const VERSION = "0.4.19";
+const VERSION = "0.4.20";
 
 export default function Signage2Page() {
     const { settings } = useSettings();
@@ -65,24 +65,35 @@ export default function Signage2Page() {
 
     const fetchCustomSettings = useCallback(async () => {
         try {
-            // Standard Next.js route (NO trailing slash)
+            // Test connectivity first
+            const pingRes = await fetch('/api/ping', { cache: 'no-store' });
+            const pingText = await pingRes.text();
+
+            // Fetch custom settings
             const response = await fetch('/api/custom-settings', { cache: 'no-store' });
             setLastFetch(new Date().toLocaleTimeString());
 
             const text = await response.text();
             if (text.startsWith('<!DOCTYPE')) {
-                setDebugInfo({ error: 'API returned HTML (404/Redirect) instead of JSON. Check route.' });
+                setDebugInfo({
+                    error: 'API returned HTML (404/Redirect).',
+                    pingStatus: pingRes.status,
+                    pingRaw: pingText.substring(0, 30)
+                });
                 return;
             }
 
             try {
                 const data = JSON.parse(text);
-                setDebugInfo(data._debug);
+                setDebugInfo({
+                    ...data._debug,
+                    pingStatus: pingRes.status === 200 ? 'OK' : 'Error'
+                });
                 if (response.ok) {
                     setCustomSettings(data.signage2 || data);
                 }
             } catch (jsonErr) {
-                setDebugInfo({ error: 'JSON Parse Error: ' + text.substring(0, 100) });
+                setDebugInfo({ error: 'JSON Parse Error: ' + text.substring(0, 50) });
             }
         } catch (error) {
             console.error('Frontend Fetch Error:', error);
@@ -222,9 +233,9 @@ export default function Signage2Page() {
                 <br />
                 {debugInfo ? (
                     <span>
+                        Ping: {debugInfo.pingStatus || 'N/A'} |
                         Path: {debugInfo.foundPath || 'NONE'} |
-                        API Err: {debugInfo.error || debugInfo.listError || 'None'} |
-                        Root Files: {(debugInfo.configList || debugInfo.addonConfigList || []).join(', ')}
+                        Err: {debugInfo.error || debugInfo.listError || 'None'}
                     </span>
                 ) : 'Connecting...'}
             </div>
