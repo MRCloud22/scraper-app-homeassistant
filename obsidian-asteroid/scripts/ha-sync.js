@@ -39,13 +39,17 @@ async function sync() {
             console.log('Step 2: Running Scraper...');
             execSync('node /app/scripts/scrape.js', { stdio: 'inherit' });
 
-            // 3. Update export folder with new data
-            // Copy the new appointments.json to the static export folder
+            // 3. Update data files
             const scraperOutputFile = path.join(__dirname, '../public/appointments.json');
             const exportOutputFile = path.join(OUTPUT_DIR, 'appointments.json');
+
+            // The scraper already writes to ../public/appointments.json
+            // We just need to ensure it's also in the export folder for FTP
             if (fs.existsSync(scraperOutputFile)) {
                 fs.copyFileSync(scraperOutputFile, exportOutputFile);
-                console.log('Updated appointments.json in export folder.');
+                console.log('Synchronized appointments.json to export container.');
+            } else {
+                console.warn('Scraper output missing! Check scraper logs.');
             }
 
             // 4. FTP Upload

@@ -25,12 +25,15 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
 WORKDIR /app
 
 # Copy package files
-COPY package.json package-lock.json ./
-
-# Install project dependencies
+COPY obsidian-asteroid/package*.json ./
 RUN npm install
+RUN npm install -g serve
 
-# Copy the rest of the application
+# Copy application source
+COPY obsidian-asteroid/ .
+
+# Create initial data placeholder to prevent 404s
+RUN mkdir -p public && echo '{"appointments":[],"count":0,"lastUpdated":""}' > public/appointments.json
 COPY . .
 
 # Build the Next.js application

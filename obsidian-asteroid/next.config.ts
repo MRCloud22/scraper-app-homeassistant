@@ -1,19 +1,18 @@
 import type { NextConfig } from "next";
 
-const isGithubPages = process.env.NEXT_PUBLIC_EXPORT === 'true';
-
 const nextConfig: NextConfig = {
-  // Use static export only when building for production/IONOS
-  output: isGithubPages ? 'export' : undefined,
-  // basePath is now dynamic based on the environment variable
-  basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
-  assetPrefix: process.env.NEXT_PUBLIC_BASE_PATH ? `${process.env.NEXT_PUBLIC_BASE_PATH}/` : '',
+  // Always use static export for HA and FTP
+  output: 'export',
+  // Ensure directory structures work (/signage/ instead of signage.html)
   trailingSlash: true,
+  // Use root as base to satisfy both HA Ingress and Root FTP
+  basePath: '',
+  assetPrefix: '',
   images: {
     unoptimized: true,
   },
   env: {
-    NEXT_PUBLIC_BASE_PATH: process.env.NEXT_PUBLIC_BASE_PATH || '',
+    NEXT_PUBLIC_BASE_PATH: '',
   },
 };
 
