@@ -4,9 +4,9 @@ import path from 'path';
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { filename: string } }
+    context: { params: Promise<{ filename: string }> }
 ) {
-    const filename = params.filename;
+    const { filename } = await context.params;
     const mediaPath = path.join('/config/obsidian_asteroid/media', filename);
 
     try {
