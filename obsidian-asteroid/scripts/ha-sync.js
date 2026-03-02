@@ -21,10 +21,27 @@ async function sync() {
         NEXT_PUBLIC_EXPORT: 'true',
         NEXT_PUBLIC_BASE_PATH: '' // Default to root
     };
+
+    const apiDir = path.join(__dirname, '../src/app/api');
+    const apiBackupDir = path.join(__dirname, '../src/app/_api_backup');
+    let apiRenamed = false;
+
     try {
+        if (fs.existsSync(apiDir)) {
+            console.log('Temporarily hiding API routes for static export build...');
+            fs.renameSync(apiDir, apiBackupDir);
+            apiRenamed = true;
+        }
+
         execSync('npm run build', { stdio: 'inherit', env: buildEnv });
+        console.log('Static export build successful.');
     } catch (err) {
         console.error('Initial build failed:', err);
+    } finally {
+        if (apiRenamed && fs.existsSync(apiBackupDir)) {
+            console.log('Restoring API routes...');
+            fs.renameSync(apiBackupDir, apiDir);
+        }
     }
 
     while (true) {
@@ -46,8 +63,12 @@ async function sync() {
             // The scraper already writes to ../public/appointments.json
             // We just need to ensure it's also in the export folder for FTP
             if (fs.existsSync(scraperOutputFile)) {
-                fs.copyFileSync(scraperOutputFile, exportOutputFile);
-                console.log('Synchronized appointments.json to export container.');
+                if (fs.existsSync(OUTPUT_DIR)) {
+                    fs.copyFileSync(scraperOutputFile, exportOutputFile);
+                    console.log('Synchronized appointments.json to export container.');
+                } else {
+                    console.warn('Export directory (out) missing. Skipping copy to export.');
+                }
             } else {
                 console.warn('Scraper output missing! Check scraper logs.');
             }
