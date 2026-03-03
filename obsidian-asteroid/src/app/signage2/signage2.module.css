@@ -39,13 +39,14 @@
 
 /* ── Background decoration circles ────────────────────────── */
 
-/* Large green circle */
+/*
+ * Circle elements — position (top/right/bottom/left) and size (width/height)
+ * are set entirely via inline styles from page.tsx (driven by settings.json).
+ * Only visual properties live here.
+ */
+
 .backgroundDecor {
     position: absolute;
-    top: 280px;
-    left: -280px;
-    width: 1200px;
-    height: 1200px;
     background-color: #5E7367;
     border-radius: 50%;
     border: 5px solid white;
@@ -53,17 +54,28 @@
     z-index: 1;
 }
 
-/* Small mint circle bottom-right */
 .backgroundDecor2 {
     position: absolute;
-    bottom: -120px;
-    right: -120px;
-    width: 520px;
-    height: 520px;
     background-color: #D7E4D9;
     border-radius: 50%;
     border: 5px solid white;
     z-index: 1;
+}
+
+/* Massage image circle (bottom-left by default) */
+.massageImage {
+    position: absolute;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 5px solid white;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    z-index: 5;
+}
+
+.massageImage img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 /* ── Header ───────────────────────────────────────────────── */
@@ -110,12 +122,9 @@
 
 /* ── Hero image (circle, top-right area) ──────────────────── */
 
+/* Position + size set via inline style from settings.json */
 .heroImage {
     position: absolute;
-    top: 160px;
-    right: 50px;
-    width: 300px;
-    height: 300px;
     border-radius: 50%;
     overflow: hidden;
     z-index: 5;

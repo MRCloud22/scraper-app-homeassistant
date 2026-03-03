@@ -18,9 +18,19 @@ interface Appointment {
     imageUrl: string | null;
 }
 
+// Config for a single circle: size + any position side (px values)
+interface CircleConfig {
+    size?: number;
+    top?: number;
+    right?: number;
+    bottom?: number;
+    left?: number;
+}
+
 interface CustomSettings {
     logo?: string;
-    heroImage?: string;
+    heroImage?: string;       // image filename for the hero circle
+    massageImage?: string;    // image filename for the massage circle
     qrCode?: string;
     backgroundImage?: string;
     title?: string;
@@ -31,7 +41,32 @@ interface CustomSettings {
     qrLabel?: string;
     qrUrl?: string;
     theme?: string;
+    // Per-circle position + size (all in px on the 1080×1920 reference canvas)
+    circleMain?: CircleConfig;    // large green background circle
+    circleAccent?: CircleConfig;  // small mint accent circle
+    circleFooter?: CircleConfig;  // massage image circle
+    heroCircle?: CircleConfig;    // hero image circle
 }
+
+/** Builds an inline style for one circle, merging defaults with settings overrides. */
+function buildCircleStyle(
+    defaults: { size: number; top?: number; right?: number; bottom?: number; left?: number },
+    override?: CircleConfig
+): React.CSSProperties {
+    const merged = { ...defaults, ...override };
+    // Start with all sides as 'auto' so conflicting CSS values don’t bleed through
+    const style: React.CSSProperties = {
+        width: `${merged.size}px`,
+        height: `${merged.size}px`,
+        top: 'auto', right: 'auto', bottom: 'auto', left: 'auto',
+    };
+    if (merged.top !== undefined) style.top = `${merged.top}px`;
+    if (merged.right !== undefined) style.right = `${merged.right}px`;
+    if (merged.bottom !== undefined) style.bottom = `${merged.bottom}px`;
+    if (merged.left !== undefined) style.left = `${merged.left}px`;
+    return style;
+}
+
 
 
 export default function Signage2Page() {
@@ -166,8 +201,15 @@ export default function Signage2Page() {
     const cacheBust = `?t=${Math.floor(Date.now() / 60000)}`; // changes every minute
     const logoSrc = customSettings.logo ? `${assetPath}/${customSettings.logo}${cacheBust}` : null;
     const heroSrc = customSettings.heroImage ? `${assetPath}/${customSettings.heroImage}${cacheBust}` : null;
+    const massageSrc = customSettings.massageImage ? `${assetPath}/${customSettings.massageImage}${cacheBust}` : `${assetPath}/massage.png${cacheBust}`;
     const qrSrc = customSettings.qrCode ? `${assetPath}/${customSettings.qrCode}${cacheBust}` : null;
     const bgUrl = customSettings.backgroundImage && customSettings.backgroundImage !== 'none' ? `url(${assetPath}/${customSettings.backgroundImage}${cacheBust})` : 'none';
+
+    // Per-circle inline styles — merge hardcoded defaults with settings.json overrides
+    const decor1Style = buildCircleStyle({ size: 1200, top: 280, left: -280 }, customSettings.circleMain);
+    const decor2Style = buildCircleStyle({ size: 520, bottom: -120, right: -120 }, customSettings.circleAccent);
+    const massageStyle = buildCircleStyle({ size: 420, bottom: -80, left: -80 }, customSettings.circleFooter);
+    const heroStyle = buildCircleStyle({ size: 300, top: 160, right: 50 }, customSettings.heroCircle);
 
     return (
         <div className={styles.viewportWrapper} ref={wrapperRef}>
@@ -177,12 +219,17 @@ export default function Signage2Page() {
                     style={{ backgroundImage: bgUrl, backgroundSize: 'cover' }}
                 >
                     {/* Background Decorations */}
-                    <div className={styles.backgroundDecor} />
-                    <div className={styles.backgroundDecor2} />
+                    <div className={styles.backgroundDecor} style={decor1Style} />
+                    <div className={styles.backgroundDecor2} style={decor2Style} />
+
+                    {/* Bottom-left massage image circle */}
+                    <div className={styles.massageImage} style={massageStyle}>
+                        <img src={massageSrc} alt="Massage" />
+                    </div>
 
                     {/* Top Right Hero Image */}
                     {heroSrc && (
-                        <div className={styles.heroImage}>
+                        <div className={styles.heroImage} style={heroStyle}>
                             <img src={heroSrc} alt="Hero" />
                         </div>
                     )}

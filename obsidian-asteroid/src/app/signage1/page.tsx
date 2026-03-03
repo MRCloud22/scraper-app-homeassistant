@@ -1,10 +1,14 @@
 'use client';
 
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { Flower, QrCode } from 'lucide-react';
 import { useSettings } from '@/context/SettingsContext';
 import styles from './signage1.module.css';
 import { filterPastAppointments } from '@/utils/filterAppointments';
+
+// Reference resolution the design is built for (portrait digital signage)
+const REF_W = 1080;
+const REF_H = 1920;
 
 interface Appointment {
     date: string;
@@ -22,6 +26,31 @@ export default function Signage1Page() {
     const [mounted, setMounted] = useState(false);
     const [loading, setLoading] = useState(true);
     const VISIBLE_COUNT = 3;
+
+    const wrapperRef = useRef<HTMLDivElement>(null);
+    const scaleRef = useRef<HTMLDivElement>(null);
+
+    // --- Uniform scale logic ---------------------------------------------------
+    useEffect(() => {
+        function updateScale() {
+            if (!wrapperRef.current || !scaleRef.current) return;
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+            // Scale so the 1080×1920 design fits exactly inside the viewport
+            const scale = Math.min(vw / REF_W, vh / REF_H);
+            scaleRef.current.style.transform = `scale(${scale})`;
+
+            // Centre the scaled canvas inside the viewport
+            const scaledW = REF_W * scale;
+            const scaledH = REF_H * scale;
+            scaleRef.current.style.left = `${(vw - scaledW) / 2}px`;
+            scaleRef.current.style.top = `${(vh - scaledH) / 2}px`;
+        }
+
+        updateScale();
+        window.addEventListener('resize', updateScale);
+        return () => window.removeEventListener('resize', updateScale);
+    }, []);
 
     useEffect(() => {
         setMounted(true);
@@ -62,7 +91,7 @@ export default function Signage1Page() {
             const response = await fetch('../api/custom-settings', { cache: 'no-store' });
             if (response.ok) {
                 const data = await response.json();
-                setCustomSettings(data.signage1 || data); // Support nesting or flat
+                setCustomSettings(data.signage1 || data);
             }
         } catch (error) {
             console.error('Error fetching custom settings:', error);
@@ -115,79 +144,83 @@ export default function Signage1Page() {
     const qrSrc = customSettings.qrCode ? `${assetPath}/${customSettings.qrCode}` : null;
 
     return (
-        <div className={styles.container} style={{ backgroundImage: bgUrl, backgroundSize: 'cover' }}>
-            {/* Header with Logo */}
-            <header className={styles.header}>
-                <div className={styles.logoIcon}>
-                    {logoSrc ? (
-                        <img src={logoSrc} alt="Logo" className={styles.customLogo} style={{ height: '80px', width: 'auto' }} />
-                    ) : (
-                        <Flower size={80} color="#C5A059" />
-                    )}
-                </div>
-                <div className={styles.logoText}>
-                    <h1>{customSettings.title || "Beautykuppel"}</h1>
-                    <p>{customSettings.subtitle || "Therme Bad Aibling"}</p>
-                </div>
-            </header>
+        <div className={styles.viewportWrapper} ref={wrapperRef}>
+            <div className={styles.scaleWrapper} ref={scaleRef}>
+                <div className={styles.container} style={{ backgroundImage: bgUrl, backgroundSize: 'cover' }}>
+                    {/* Header with Logo */}
+                    <header className={styles.header}>
+                        <div className={styles.logoIcon}>
+                            {logoSrc ? (
+                                <img src={logoSrc} alt="Logo" />
+                            ) : (
+                                <Flower size={80} color="#C5A059" />
+                            )}
+                        </div>
+                        <div className={styles.logoText}>
+                            <h1>{customSettings.title || "Beautykuppel"}</h1>
+                            <p>{customSettings.subtitle || "Therme Bad Aibling"}</p>
+                        </div>
+                    </header>
 
-            {/* Main Circle Content */}
-            <main className={styles.main}>
-                <div className={styles.circleContainer} style={customSettings.circleColor ? { backgroundColor: customSettings.circleColor } : {}}>
-                    <h2 className={styles.title}>{customSettings.listTitle || "Freie Termine heute"}</h2>
+                    {/* Main Circle Content */}
+                    <main className={styles.main}>
+                        <div className={styles.circleContainer} style={customSettings.circleColor ? { backgroundColor: customSettings.circleColor } : {}}>
+                            <h2 className={styles.title}>{customSettings.listTitle || "Freie Termine heute"}</h2>
 
-                    {loading && appointments.length === 0 ? (
-                        <p>Laden...</p>
-                    ) : futureAppointments.length === 0 ? (
-                        <p className={styles.emptyState}>{customSettings.emptyText || settings.emptyStateText || 'Aktuell sind keine freien Termine vorhanden.'}</p>
-                    ) : (
-                        <table className={styles.appointmentsTable}>
-                            <thead className={styles.tableHeader}>
-                                <tr>
-                                    <th>Uhrzeit</th>
-                                    <th>Anwendung</th>
-                                    <th>Preis</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {visibleAppointments.map((apt, index) => (
-                                    <tr
-                                        key={`${apt.date}-${apt.time}-${index}`}
-                                        className={styles.appointmentRow}
-                                        style={{ animationDelay: `${index * 0.1}s` }}
-                                    >
-                                        <td className={styles.time}>{apt.time}</td>
-                                        <td className={styles.treatment}>{apt.treatment}</td>
-                                        <td className={styles.price}>{apt.price}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    )}
-                </div>
-            </main>
+                            {loading && appointments.length === 0 ? (
+                                <p>Laden...</p>
+                            ) : futureAppointments.length === 0 ? (
+                                <p className={styles.emptyState}>{customSettings.emptyText || settings.emptyStateText || 'Aktuell sind keine freien Termine vorhanden.'}</p>
+                            ) : (
+                                <table className={styles.appointmentsTable}>
+                                    <thead className={styles.tableHeader}>
+                                        <tr>
+                                            <th>Uhrzeit</th>
+                                            <th>Anwendung</th>
+                                            <th>Preis</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {visibleAppointments.map((apt, index) => (
+                                            <tr
+                                                key={`${apt.date}-${apt.time}-${index}`}
+                                                className={styles.appointmentRow}
+                                                style={{ animationDelay: `${index * 0.1}s` }}
+                                            >
+                                                <td className={styles.time}>{apt.time}</td>
+                                                <td className={styles.treatment}>{apt.treatment}</td>
+                                                <td className={styles.price}>{apt.price}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            )}
+                        </div>
+                    </main>
 
-            {/* Footer with Floating Elements */}
-            <footer className={styles.footer}>
-                <div className={styles.footerCircles}>
-                    <div className={styles.qrCircle}>
-                        {qrSrc ? (
-                            <img src={qrSrc} alt="QR" style={{ width: '120px', height: '120px' }} />
-                        ) : (
-                            <QrCode size={120} color="#5D7266" />
-                        )}
-                        <span className={styles.qrText}>{customSettings.qrLabel || "Hier buchen"}</span>
-                    </div>
-                    <div className={styles.infoCircle}>
-                        {customSettings.infoText || "Buchung direkt am Empfang"}
-                    </div>
-                </div>
+                    {/* Footer with Floating Elements */}
+                    <footer className={styles.footer}>
+                        <div className={styles.footerCircles}>
+                            <div className={styles.qrCircle}>
+                                {qrSrc ? (
+                                    <img src={qrSrc} alt="QR" style={{ width: '120px', height: '120px' }} />
+                                ) : (
+                                    <QrCode size={120} color="#5D7266" />
+                                )}
+                                <span className={styles.qrText}>{customSettings.qrLabel || "Hier buchen"}</span>
+                            </div>
+                            <div className={styles.infoCircle}>
+                                {customSettings.infoText || "Buchung direkt am Empfang"}
+                            </div>
+                        </div>
 
-                <div className={styles.mintCircle}>
-                    <QrCode size={100} color="#5D7266" />
-                    <span className={styles.qrText}>Infos unter<br />beautykuppel.de</span>
+                        <div className={styles.mintCircle}>
+                            <QrCode size={100} color="#5D7266" />
+                            <span className={styles.qrText}>Infos unter<br />beautykuppel.de</span>
+                        </div>
+                    </footer>
                 </div>
-            </footer>
+            </div>
         </div>
     );
 }

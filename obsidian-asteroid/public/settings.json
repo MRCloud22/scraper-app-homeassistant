@@ -5,7 +5,32 @@
         "logo": "logo.png",
         "backgroundImage": "none",
         "heroImage": "spa-hero.png",
+        "massageImage": "massage.png",
         "qrCode": "qr-code.png",
-        "listTitle": "FREIE TERMINE HEUTE"
+        "listTitle": "FREIE TERMINE HEUTE",
+        "emptyText": "",
+        "qrLabel": "Infos & Buchung unter",
+        "qrUrl": "beautykuppel.de/termine",
+        "theme": "light",
+        "circleMain": {
+            "size": 1200,
+            "top": 280,
+            "left": -280
+        },
+        "circleAccent": {
+            "size": 520,
+            "bottom": -120,
+            "right": -120
+        },
+        "circleFooter": {
+            "size": 420,
+            "bottom": -80,
+            "left": -80
+        },
+        "heroCircle": {
+            "size": 300,
+            "top": 160,
+            "right": 50
+        }
     }
 }
