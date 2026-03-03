@@ -66,6 +66,11 @@ interface CustomSettings {
         show?: boolean;        // Enable/disable (default: true)
         fontSize?: number;     // Font size in px (default: 38)
         color?: string;        // Text color (default: #5E7367)
+        // Directional offsets in px (shift the text within the content area)
+        top?: number;
+        bottom?: number;
+        left?: number;
+        right?: number;
     };
 }
 
@@ -391,10 +396,18 @@ export default function Signage2Page() {
                         {showPromo ? (
                             <div
                                 className={styles.promoScreen}
-                                style={{
-                                    fontSize: customSettings.promoConfig?.fontSize ? `${customSettings.promoConfig.fontSize}px` : '38px',
-                                    color: customSettings.promoConfig?.color || '#5E7367',
-                                }}
+                                style={(() => {
+                                    const pc = customSettings.promoConfig;
+                                    return {
+                                        fontSize: pc?.fontSize ? `${pc.fontSize}px` : '38px',
+                                        color: pc?.color || '#5E7367',
+                                        // Directional padding offsets shift the centred text
+                                        paddingTop: pc?.top !== undefined ? `${60 + pc.top}px` : '60px',
+                                        paddingBottom: pc?.bottom !== undefined ? `${60 + pc.bottom}px` : '60px',
+                                        paddingLeft: pc?.left !== undefined ? `${80 + pc.left}px` : '80px',
+                                        paddingRight: pc?.right !== undefined ? `${80 + pc.right}px` : '80px',
+                                    };
+                                })()}
                                 dangerouslySetInnerHTML={{
                                     __html: (customSettings.promoConfig?.text || '').replace(/\\n/g, '<br/>')
                                 }}
