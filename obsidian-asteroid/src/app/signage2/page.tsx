@@ -58,6 +58,8 @@ interface CustomSettings {
     circleAccent?: CircleConfig;  // small mint accent circle
     circleFooter?: CircleConfig;  // massage image circle
     heroCircle?: CircleConfig;    // hero image circle
+    timeConfig?: ElementConfig & { show?: boolean, color?: string };
+    lastUpdatedConfig?: ElementConfig & { show?: boolean, color?: string };
 }
 
 /** Builds an inline style for one circle, merging defaults with settings overrides. */
@@ -91,10 +93,21 @@ export default function Signage2Page() {
     const [loading, setLoading] = useState(true);
     const [isStaticMode, setIsStaticMode] = useState(false);
     const [settingsLoaded, setSettingsLoaded] = useState(false);
+    const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+    const [currentTime, setCurrentTime] = useState<Date | null>(null);
     const VISIBLE_COUNT = 5;
 
     const wrapperRef = useRef<HTMLDivElement>(null);
     const scaleRef = useRef<HTMLDivElement>(null);
+
+    // --- Current Time Logic ---
+    useEffect(() => {
+        setCurrentTime(new Date());
+        const timer = setInterval(() => {
+            setCurrentTime(new Date());
+        }, 1000);
+        return () => clearInterval(timer);
+    }, []);
 
     // --- Uniform scale logic ---------------------------------------------------
     useEffect(() => {
@@ -131,6 +144,9 @@ export default function Signage2Page() {
             const data = await response.json();
             if (data.success) {
                 setAppointments(data.appointments);
+                if (data.lastUpdated) {
+                    setLastUpdated(data.lastUpdated);
+                }
             }
         } catch (error) {
             console.error('Error fetching appointments:', error);
@@ -231,6 +247,31 @@ export default function Signage2Page() {
                     className={`${styles.container} ${customSettings.theme === 'dark' ? styles.darkTheme : ''}`}
                     style={{ backgroundImage: bgUrl, backgroundSize: 'cover' }}
                 >
+                    {/* Time Layer */}
+                    {customSettings.timeConfig?.show !== false && currentTime && (
+                        <div
+                            className={styles.timeDisplay}
+                            style={(() => {
+                                const tc = customSettings.timeConfig;
+                                const s: React.CSSProperties = {
+                                    position: 'absolute',
+                                    zIndex: 20,
+                                    // default position if fully undefined
+                                    top: (tc?.top ?? tc?.right ?? tc?.bottom ?? tc?.left) === undefined ? 40 : tc?.top,
+                                    right: (tc?.top ?? tc?.right ?? tc?.bottom ?? tc?.left) === undefined ? 60 : tc?.right,
+                                    bottom: tc?.bottom,
+                                    left: tc?.left,
+                                    fontSize: tc?.size ? `${tc.size}px` : '48px',
+                                    color: tc?.color || '#5E7367',
+                                    fontWeight: '600'
+                                };
+                                return s;
+                            })()}
+                        >
+                            {currentTime.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })} Uhr
+                        </div>
+                    )}
+
                     {/* Background Decorations */}
                     <div className={styles.backgroundDecor} style={decor1Style} />
                     <div className={styles.backgroundDecor2} style={decor2Style} />
@@ -362,6 +403,31 @@ export default function Signage2Page() {
                                 <strong>{settingsLoaded ? (customSettings.qrUrl ?? "") : "beautykuppel.de/termine"}</strong>
                             </div>
                         </div>
+
+                        {/* Last Updated Timestamp */}
+                        {customSettings.lastUpdatedConfig?.show !== false && lastUpdated && (
+                            <div
+                                className={styles.lastUpdatedDisplay}
+                                style={(() => {
+                                    const lc = customSettings.lastUpdatedConfig;
+                                    const s: React.CSSProperties = {
+                                        position: 'absolute',
+                                        zIndex: 20,
+                                        // default position if fully undefined
+                                        bottom: (lc?.top ?? lc?.right ?? lc?.bottom ?? lc?.left) === undefined ? 30 : lc?.bottom,
+                                        right: (lc?.top ?? lc?.right ?? lc?.bottom ?? lc?.left) === undefined ? 40 : lc?.right,
+                                        top: lc?.top,
+                                        left: lc?.left,
+                                        fontSize: lc?.size ? `${lc.size}px` : '20px',
+                                        color: lc?.color || 'rgba(94, 115, 103, 0.7)',
+                                        fontWeight: '400'
+                                    };
+                                    return s;
+                                })()}
+                            >
+                                Stand: {new Date(lastUpdated).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })} Uhr
+                            </div>
+                        )}
                     </footer>
 
                 </div>

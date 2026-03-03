@@ -182,7 +182,7 @@ async function sync() {
 
                         await client.ensureDir(options.ftp_remote_path);
 
-                        async function uploadChangedFiles(localDir, remoteDir) {
+                        async function uploadChangedFiles(localDir, remoteDir, isRoot = false) {
                             const items = fs.readdirSync(localDir);
                             for (const item of items) {
                                 if (item === 'node_modules' || item === '.git') continue;
@@ -191,11 +191,14 @@ async function sync() {
                                 const stats = fs.statSync(localPath);
 
                                 if (stats.isDirectory()) {
+                                    if (!forceFullSync) continue; // Skip deep folders unless forceFullSync
+
                                     await client.ensureDir(item);
-                                    await uploadChangedFiles(localPath, path.join(remoteDir, item));
+                                    await uploadChangedFiles(localPath, path.join(remoteDir, item), false);
                                     await client.cd('..');
                                 } else {
-                                    if (forceFullSync || stats.mtimeMs > lastSyncData.timestamp) {
+                                    const isEssential = isRoot && (item === 'appointments.json' || item === 'rss.xml');
+                                    if (forceFullSync || isEssential) {
                                         console.log(`Uploading: ${item}${forceFullSync ? ' (Force)' : ''}`);
                                         await client.uploadFrom(localPath, item);
                                     }
@@ -203,7 +206,7 @@ async function sync() {
                             }
                         }
 
-                        await uploadChangedFiles(STATIC_BUILD_DIR, options.ftp_remote_path);
+                        await uploadChangedFiles(STATIC_BUILD_DIR, options.ftp_remote_path, true);
 
                         fs.writeFileSync(lastSyncFile, JSON.stringify({
                             timestamp: Date.now(),

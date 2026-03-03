@@ -41,6 +41,20 @@
             "size": 300,
             "top": 160,
             "right": 50
+        },
+        "timeConfig": {
+            "show": true,
+            "size": 48,
+            "top": 40,
+            "right": 60,
+            "color": "#5E7367"
+        },
+        "lastUpdatedConfig": {
+            "show": true,
+            "size": 20,
+            "bottom": 30,
+            "right": 40,
+            "color": "rgba(94, 115, 103, 0.7)"
         }
     }
 }
