@@ -231,9 +231,20 @@ export default function Signage2Page() {
     // Asset path: static = relative media folder, HA = API endpoint
 
     // Dynamic assets — static uses relative path, HA uses relative API URL
-    // Cache-busting: append ?t= to image URLs so browser refetches on each settings poll
     const assetPath = isStaticMode ? '../media' : '../api/custom-media';
-    const cacheBust = `?t=${Math.floor(Date.now() / 60000)}`; // changes every minute
+
+    // Stable cache busting token that only changes when the settings configuration literally changes.
+    // This prevents the heavy images from being re-downloaded every minute on weak hardware like a Raspberry Pi.
+    const settingsStr = JSON.stringify(customSettings);
+    const cacheBustToken = useMemo(() => {
+        let hash = 0;
+        for (let i = 0; i < settingsStr.length; i++) {
+            hash = Math.imul(31, hash) + settingsStr.charCodeAt(i) | 0;
+        }
+        return hash.toString(36);
+    }, [settingsStr]);
+    const cacheBust = `?t=${cacheBustToken}`;
+
     const logoSrc = customSettings.logo ? `${assetPath}/${customSettings.logo}${cacheBust}` : null;
     const heroSrc = customSettings.heroImage ? `${assetPath}/${customSettings.heroImage}${cacheBust}` : null;
     const massageSrc = customSettings.massageImage ? `${assetPath}/${customSettings.massageImage}${cacheBust}` : `${assetPath}/massage.png${cacheBust}`;
@@ -284,13 +295,13 @@ export default function Signage2Page() {
 
                     {/* Bottom-left massage image circle */}
                     <div className={styles.massageImage} style={massageStyle}>
-                        <img src={massageSrc} alt="Massage" />
+                        <img src={massageSrc} alt="Massage" loading="eager" />
                     </div>
 
                     {/* Top Right Hero Image */}
                     {heroSrc && (
                         <div className={styles.heroImage} style={heroStyle}>
-                            <img src={heroSrc} alt="Hero" />
+                            <img src={heroSrc} alt="Hero" loading="eager" />
                         </div>
                     )}
 
@@ -319,6 +330,7 @@ export default function Signage2Page() {
                                 <img
                                     src={logoSrc}
                                     alt="Logo"
+                                    loading="eager"
                                     style={customSettings.logoConfig?.size
                                         ? { height: customSettings.logoConfig.size, width: 'auto' }
                                         : undefined}
@@ -354,7 +366,7 @@ export default function Signage2Page() {
                                     >
                                         <div className={styles.pillImage}>
                                             {apt.imageUrl ? (
-                                                <img src={apt.imageUrl} alt={apt.treatment} />
+                                                <img src={apt.imageUrl} alt={apt.treatment} loading="eager" />
                                             ) : (
                                                 <div style={{ backgroundColor: '#D7E4D9', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                                     <Flower color="#5E7367" size={50} />
