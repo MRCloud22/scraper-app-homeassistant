@@ -1,10 +1,25 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
 
+/*
+ * Portrait digital-signage layout.
+ * Reference canvas: 1080 × 1920 (Full-HD portrait).
+ * JS applies transform: scale() so it looks identical at any size.
+ */
+
+.scaleWrapper {
+    width: 1080px;
+    height: 1920px;
+    transform-origin: top left;
+    position: absolute;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+}
+
 .container {
-    width: 100vw;
-    height: 100vh;
+    width: 1080px;
+    height: 1920px;
     background-color: #F4F1E9;
-    /* Cream Background from image */
     color: #333;
     font-family: 'Montserrat', sans-serif;
     overflow: hidden;
@@ -13,16 +28,27 @@
     flex-direction: column;
 }
 
-/* Base green circle in the middle-ish */
+/* Viewport shell — fills the browser and centres the scaled canvas */
+.viewportWrapper {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+    background: #000;
+}
+
+/* ── Background decoration circles ────────────────────────── */
+
+/* Large green circle */
 .backgroundDecor {
     position: absolute;
-    top: 22%;
-    left: -15%;
-    width: 110vw;
-    height: 90vh;
+    top: 280px;
+    left: -280px;
+    width: 1200px;
+    height: 1200px;
     background-color: #5E7367;
-    /* Target Green */
     border-radius: 50%;
+    border: 5px solid white;
     opacity: 1;
     z-index: 1;
 }
@@ -30,19 +56,21 @@
 /* Small mint circle bottom-right */
 .backgroundDecor2 {
     position: absolute;
-    bottom: -15vh;
-    right: -10vw;
-    width: 50vw;
-    height: 50vw;
+    bottom: -120px;
+    right: -120px;
+    width: 520px;
+    height: 520px;
     background-color: #D7E4D9;
-    /* Mint Circle behind QR */
     border-radius: 50%;
+    border: 5px solid white;
     z-index: 1;
 }
 
+/* ── Header ───────────────────────────────────────────────── */
+
 .header {
-    height: 15vh;
-    padding: 3.5rem 4rem;
+    height: 180px;
+    padding: 44px 50px;
     display: flex;
     justify-content: flex-start;
     align-items: center;
@@ -51,15 +79,21 @@
 }
 
 .logoIcon {
-    width: 80px;
-    height: 80px;
-    margin-right: 1.5rem;
+    width: 90px;
+    height: 90px;
+    margin-right: 24px;
     display: flex;
     align-items: center;
+    flex-shrink: 0;
+}
+
+.logoIcon img {
+    height: 90px;
+    width: auto;
 }
 
 .logoText h1 {
-    font-size: 2.2rem;
+    font-size: 38px;
     color: #5E7367;
     margin: 0;
     text-transform: uppercase;
@@ -68,22 +102,20 @@
 }
 
 .logoText p {
-    font-size: 1.6rem;
+    font-size: 26px;
     color: #C19A6B;
-    /* Gold/Tan color */
     margin: 0;
     font-weight: 500;
 }
 
-/* The circular hero image top-right */
+/* ── Hero image (circle, top-right area) ──────────────────── */
+
 .heroImage {
     position: absolute;
-    top: 6vh;
-    right: 3vw;
-    width: 25vw;
-    height: 25vw;
-    max-width: 280px;
-    max-height: 280px;
+    top: 160px;
+    right: 50px;
+    width: 300px;
+    height: 300px;
     border-radius: 50%;
     overflow: hidden;
     z-index: 5;
@@ -97,23 +129,25 @@
     object-fit: cover;
 }
 
+/* ── Main content ─────────────────────────────────────────── */
+
 .main {
     flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 0 4rem;
+    padding: 0 50px;
     position: relative;
     z-index: 10;
 }
 
 .title {
     color: white;
-    font-size: 3.8rem;
+    font-size: 64px;
     text-transform: uppercase;
-    letter-spacing: 2px;
-    margin-top: 5vh;
-    margin-bottom: 5vh;
+    letter-spacing: 3px;
+    margin-top: 320px;
+    margin-bottom: 50px;
     font-weight: 700;
     text-align: center;
     line-height: 1.2;
@@ -121,17 +155,16 @@
 
 .appointmentList {
     width: 100%;
-    max-width: 900px;
+    max-width: 940px;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 22px;
 }
 
 .appointmentPill {
     background-color: #F4F1E9;
-    /* Pill matches background but clear */
     border-radius: 100px;
-    padding: 0.8rem 4rem 0.8rem 0.8rem;
+    padding: 12px 50px 12px 12px;
     display: flex;
     align-items: center;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
@@ -146,7 +179,7 @@
     height: 110px;
     border-radius: 50%;
     overflow: hidden;
-    margin-right: 2rem;
+    margin-right: 28px;
     flex-shrink: 0;
     border: 2px solid white;
 }
@@ -164,29 +197,31 @@
 }
 
 .time {
-    font-size: 1.5rem;
+    font-size: 24px;
     color: #444;
     font-weight: 500;
-    margin-bottom: 0.1rem;
+    margin-bottom: 2px;
 }
 
 .treatment {
-    font-size: 1.8rem;
+    font-size: 28px;
     font-weight: 600;
     color: #222;
 }
 
 .price {
-    font-size: 2.22rem;
+    font-size: 36px;
     font-weight: 700;
     color: #444;
-    min-width: 100px;
+    min-width: 110px;
     text-align: right;
 }
 
+/* ── Footer / QR section ──────────────────────────────────── */
+
 .footer {
-    height: 22vh;
-    padding: 2rem 5rem;
+    height: 280px;
+    padding: 30px 55px;
     display: flex;
     justify-content: flex-end;
     align-items: center;
@@ -198,28 +233,29 @@
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    gap: 1rem;
+    gap: 14px;
 }
 
 .qrContainer {
-    padding: 0.8rem;
+    padding: 10px;
     background-color: transparent;
 }
 
 .qrContainer img {
     mix-blend-mode: multiply;
-    /* Make white QR background transparent on mint */
-    width: 130px;
-    height: 130px;
+    width: 150px;
+    height: 150px;
 }
 
 .qrInfoText {
-    font-size: 1.3rem;
+    font-size: 22px;
     color: #5E7367;
     font-weight: 600;
     text-align: right;
-    margin-top: -1rem;
+    margin-top: -10px;
 }
+
+/* ── Animations ───────────────────────────────────────────── */
 
 @keyframes slideIn {
     from {
@@ -233,13 +269,17 @@
     }
 }
 
+/* ── Empty state ──────────────────────────────────────────── */
+
 .emptyState {
-    font-size: 2.5rem;
+    font-size: 42px;
     color: white;
     text-align: center;
-    padding: 10vh 0;
+    padding: 140px 0;
     font-weight: 600;
 }
+
+/* ── Dark theme overrides ─────────────────────────────────── */
 
 .darkTheme {
     background-color: #1a1a1a !important;
@@ -270,7 +310,7 @@
     bottom: 5px;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 0.7rem;
+    font-size: 11px;
     color: rgba(0, 0, 0, 0.3);
     pointer-events: none;
     text-align: center;

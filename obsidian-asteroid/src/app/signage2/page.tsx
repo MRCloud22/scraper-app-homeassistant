@@ -1,10 +1,14 @@
 'use client';
 
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { Flower, QrCode } from 'lucide-react';
 import { useSettings } from '@/context/SettingsContext';
 import styles from './signage2.module.css';
 import { filterPastAppointments } from '@/utils/filterAppointments';
+
+// Reference resolution the design is built for (portrait digital signage)
+const REF_W = 1080;
+const REF_H = 1920;
 
 interface Appointment {
     date: string;
@@ -38,7 +42,33 @@ export default function Signage2Page() {
     const [mounted, setMounted] = useState(false);
     const [loading, setLoading] = useState(true);
     const [isStaticMode, setIsStaticMode] = useState(false);
+    const [settingsLoaded, setSettingsLoaded] = useState(false);
     const VISIBLE_COUNT = 5;
+
+    const wrapperRef = useRef<HTMLDivElement>(null);
+    const scaleRef = useRef<HTMLDivElement>(null);
+
+    // --- Uniform scale logic ---------------------------------------------------
+    useEffect(() => {
+        function updateScale() {
+            if (!wrapperRef.current || !scaleRef.current) return;
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+            // Scale so the 1920×1080 design fits exactly inside the viewport
+            const scale = Math.min(vw / REF_W, vh / REF_H);
+            scaleRef.current.style.transform = `scale(${scale})`;
+
+            // Centre the scaled canvas inside the viewport
+            const scaledW = REF_W * scale;
+            const scaledH = REF_H * scale;
+            scaleRef.current.style.left = `${(vw - scaledW) / 2}px`;
+            scaleRef.current.style.top = `${(vh - scaledH) / 2}px`;
+        }
+
+        updateScale();
+        window.addEventListener('resize', updateScale);
+        return () => window.removeEventListener('resize', updateScale);
+    }, []);
 
     useEffect(() => {
         setMounted(true);
@@ -72,6 +102,7 @@ export default function Signage2Page() {
                 const data = JSON.parse(text);
                 setCustomSettings(data.signage2 || data);
                 setIsStaticMode(false);
+                setSettingsLoaded(true);
                 return;
             }
         } catch (_apiErr) {
@@ -86,12 +117,12 @@ export default function Signage2Page() {
                 const data = await staticRes.json();
                 setCustomSettings(data.signage2 || data);
                 setIsStaticMode(true);
+                setSettingsLoaded(true);
             }
         } catch (_staticErr) {
             // No settings available
         }
     }, []);
-
 
     useEffect(() => {
         if (!mounted) return;
@@ -139,92 +170,96 @@ export default function Signage2Page() {
     const bgUrl = customSettings.backgroundImage && customSettings.backgroundImage !== 'none' ? `url(${assetPath}/${customSettings.backgroundImage}${cacheBust})` : 'none';
 
     return (
-        <div
-            className={`${styles.container} ${customSettings.theme === 'dark' ? styles.darkTheme : ''}`}
-            style={{ backgroundImage: bgUrl, backgroundSize: 'cover' }}
-        >
-            {/* Background Decorations */}
-            <div className={styles.backgroundDecor} />
-            <div className={styles.backgroundDecor2} />
+        <div className={styles.viewportWrapper} ref={wrapperRef}>
+            <div className={styles.scaleWrapper} ref={scaleRef}>
+                <div
+                    className={`${styles.container} ${customSettings.theme === 'dark' ? styles.darkTheme : ''}`}
+                    style={{ backgroundImage: bgUrl, backgroundSize: 'cover' }}
+                >
+                    {/* Background Decorations */}
+                    <div className={styles.backgroundDecor} />
+                    <div className={styles.backgroundDecor2} />
 
-            {/* Top Right Hero Image */}
-            {heroSrc && (
-                <div className={styles.heroImage}>
-                    <img src={heroSrc} alt="Hero" />
-                </div>
-            )}
-
-            {/* Header */}
-            <header className={styles.header}>
-                <div className={styles.logoIcon}>
-                    {logoSrc ? (
-                        <img src={logoSrc} alt="Logo" style={{ height: '80px', width: 'auto' }} />
-                    ) : (
-                        <Flower size={80} color="#5E7367" />
+                    {/* Top Right Hero Image */}
+                    {heroSrc && (
+                        <div className={styles.heroImage}>
+                            <img src={heroSrc} alt="Hero" />
+                        </div>
                     )}
-                </div>
-                <div className={styles.logoText}>
-                    <h1>{customSettings.title || "BEAUTYKUPPEL"}</h1>
-                    <p>{customSettings.subtitle || "Therme Bad Aibling"}</p>
-                </div>
-            </header>
 
-            {/* Main Content */}
-            <main className={styles.main}>
-                <h2 className={styles.title} dangerouslySetInnerHTML={{ __html: (customSettings.listTitle || "FREIE TERMINE<br/>HEUTE").replace('\n', '<br/>') }} />
+                    {/* Header */}
+                    <header className={styles.header}>
+                        <div className={styles.logoIcon}>
+                            {logoSrc ? (
+                                <img src={logoSrc} alt="Logo" />
+                            ) : (!settingsLoaded && (
+                                <Flower size={80} color="#5E7367" />
+                            ))}
+                        </div>
+                        <div className={styles.logoText}>
+                            <h1>{settingsLoaded ? (customSettings.title ?? "") : "BEAUTYKUPPEL"}</h1>
+                            <p>{settingsLoaded ? (customSettings.subtitle ?? "") : "Therme Bad Aibling"}</p>
+                        </div>
+                    </header>
 
-                {loading && appointments.length === 0 ? (
-                    <div className={styles.emptyState}>Laden...</div>
-                ) : futureAppointments.length === 0 ? (
-                    <div className={styles.emptyState}>{customSettings.emptyText || settings.emptyStateText || 'Aktuell sind keine freien Termine vorhanden.'}</div>
-                ) : (
-                    <div className={styles.appointmentList}>
-                        {visibleAppointments.map((apt: Appointment, index: number) => (
-                            <div
-                                key={`${apt.date}-${apt.time}-${index}`}
-                                className={styles.appointmentPill}
-                                style={{
-                                    animationDelay: `${index * 0.15}s`,
-                                    backgroundColor: customSettings.pillColor || '#F4F1E9'
-                                }}
-                            >
-                                <div className={styles.pillImage}>
-                                    {apt.imageUrl ? (
-                                        <img src={apt.imageUrl} alt={apt.treatment} />
-                                    ) : (
-                                        <div style={{ backgroundColor: '#D7E4D9', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <Flower color="#5E7367" size={50} />
-                                        </div>
-                                    )}
-                                </div>
-                                <div className={styles.pillContent}>
-                                    <div className={styles.time}>{apt.time} Uhr</div>
-                                    <div className={styles.treatment}>{apt.treatment}</div>
-                                </div>
-                                <div className={styles.price}>{apt.price || '45€'}</div>
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </main>
+                    {/* Main Content */}
+                    <main className={styles.main}>
+                        <h2 className={styles.title} dangerouslySetInnerHTML={{ __html: (settingsLoaded ? (customSettings.listTitle ?? "") : "FREIE TERMINE<br/>HEUTE").replace('\\n', '<br/>') }} />
 
-            {/* Footer */}
-            <footer className={styles.footer}>
-                <div className={styles.qrSection}>
-                    <div className={styles.qrContainer}>
-                        {qrSrc ? (
-                            <img src={qrSrc} alt="QR" />
+                        {loading && appointments.length === 0 ? (
+                            <div className={styles.emptyState}>Laden...</div>
+                        ) : futureAppointments.length === 0 ? (
+                            <div className={styles.emptyState}>{settingsLoaded ? (customSettings.emptyText ?? "") : (settings.emptyStateText || 'Aktuell sind keine freien Termine vorhanden.')}</div>
                         ) : (
-                            <QrCode size={130} color="#5E7367" />
+                            <div className={styles.appointmentList}>
+                                {visibleAppointments.map((apt: Appointment, index: number) => (
+                                    <div
+                                        key={`${apt.date}-${apt.time}-${index}`}
+                                        className={styles.appointmentPill}
+                                        style={{
+                                            animationDelay: `${index * 0.15}s`,
+                                            backgroundColor: settingsLoaded ? (customSettings.pillColor || "transparent") : '#F4F1E9'
+                                        }}
+                                    >
+                                        <div className={styles.pillImage}>
+                                            {apt.imageUrl ? (
+                                                <img src={apt.imageUrl} alt={apt.treatment} />
+                                            ) : (
+                                                <div style={{ backgroundColor: '#D7E4D9', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                    <Flower color="#5E7367" size={50} />
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className={styles.pillContent}>
+                                            <div className={styles.time}>{apt.time} Uhr</div>
+                                            <div className={styles.treatment}>{apt.treatment}</div>
+                                        </div>
+                                        <div className={styles.price}>{apt.price || '45€'}</div>
+                                    </div>
+                                ))}
+                            </div>
                         )}
-                    </div>
-                    <div className={styles.qrInfoText}>
-                        {customSettings.qrLabel || "Infos & Buchung unter"}<br />
-                        <strong>{customSettings.qrUrl || "beautykuppel.de/termine"}</strong>
-                    </div>
-                </div>
-            </footer>
+                    </main>
 
+                    {/* Footer */}
+                    <footer className={styles.footer}>
+                        <div className={styles.qrSection}>
+                            <div className={styles.qrContainer}>
+                                {qrSrc ? (
+                                    <img src={qrSrc} alt="QR" />
+                                ) : (!settingsLoaded && (
+                                    <QrCode size={130} color="#5E7367" />
+                                ))}
+                            </div>
+                            <div className={styles.qrInfoText}>
+                                {settingsLoaded ? (customSettings.qrLabel ?? "") : "Infos & Buchung unter"}<br />
+                                <strong>{settingsLoaded ? (customSettings.qrUrl ?? "") : "beautykuppel.de/termine"}</strong>
+                            </div>
+                        </div>
+                    </footer>
+
+                </div>
+            </div>
         </div>
     );
 }

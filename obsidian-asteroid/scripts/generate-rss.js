@@ -17,6 +17,22 @@ function generateRss() {
     const data = JSON.parse(fs.readFileSync(APPOINTMENTS_FILE, 'utf8'));
     const appointments = data.appointments || [];
 
+    let emptyStateText = "Aktuell sind keine freien Termine vorhanden.";
+    const CONFIG_DIR = '/config/obsidian_asteroid';
+    const settingsFile = path.join(CONFIG_DIR, 'settings.json');
+    if (fs.existsSync(settingsFile)) {
+      try {
+        const settingsData = JSON.parse(fs.readFileSync(settingsFile, 'utf8'));
+        if (settingsData && settingsData.signage2 && settingsData.signage2.emptyText) {
+          emptyStateText = settingsData.signage2.emptyText;
+        } else if (settingsData && settingsData.emptyText) {
+          emptyStateText = settingsData.emptyText;
+        }
+      } catch (e) {
+        console.error('Failed to parse settings.json:', e);
+      }
+    }
+
     let rss = `<?xml version="1.0" encoding="UTF-8" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
 <channel>
@@ -27,15 +43,22 @@ function generateRss() {
   <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
 `;
 
-    appointments.forEach((app, index) => {
-      const guid = Buffer.from(`${app.date}-${app.time}-${app.treatment}`).toString('base64');
-      // Format time with period instead of colon: "13:00" → "13.00"
-      const timeFormatted = (app.time || '').replace(':', '.');
-      // Format price — strip trailing ".00" if present: "37.00" → "37"
-      const priceFormatted = (app.price || '').replace(/\.00\s*€?$/, '').replace(/€/, '').trim();
-      const priceDisplay = priceFormatted ? `${priceFormatted} €` : '';
-
+    if (appointments.length === 0) {
       rss += `
+  <item>
+    <title>${emptyStateText}</title>
+    <link>https://shop.beautykuppel-therme-badaibling.de/</link>
+    <guid isPermaLink="false">empty-state</guid>
+    <pubDate>${new Date().toUTCString()}</pubDate>
+  </item>`;
+    } else {
+      appointments.forEach((app, index) => {
+        const guid = Buffer.from(`${app.date}-${app.time}-${app.treatment}`).toString('base64');
+        const timeFormatted = (app.time || '').replace(':', '.');
+        const priceFormatted = (app.price || '').replace(/\.00\s*€?$/, '').replace(/€/, '').trim();
+        const priceDisplay = priceFormatted ? `${priceFormatted} €` : '';
+
+        rss += `
   <item>
     <title>${app.treatment} um ${timeFormatted} Uhr${priceDisplay ? ` für ${priceDisplay}` : ''}</title>
     <link>${(app.bookingUrl || '').replace(/&/g, '&amp;')}</link>
@@ -43,17 +66,18 @@ function generateRss() {
     <pubDate>${new Date().toUTCString()}</pubDate>
   </item>`;
 
-      // Insert separator item after every 3 appointments
-      if ((index + 1) % 3 === 0) {
-        rss += `
+        // Insert separator item after every 3 appointments
+        if ((index + 1) % 3 === 0) {
+          rss += `
   <item>
     <title>Heutige freie Termine</title>
     <link>https://shop.beautykuppel-therme-badaibling.de/</link>
     <guid isPermaLink="false">separator-${Math.floor(index / 3)}</guid>
     <pubDate>${new Date().toUTCString()}</pubDate>
   </item>`;
-      }
-    });
+        }
+      });
+    }
 
     rss += `
 </channel>

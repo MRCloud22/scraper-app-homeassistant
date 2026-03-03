@@ -1,0 +1,11 @@
+{
+    "signage2": {
+        "title": "BEAUTYKUPPEL",
+        "subtitle": "Therme Bad Aibling",
+        "logo": "logo.png",
+        "backgroundImage": "none",
+        "heroImage": "spa-hero.png",
+        "qrCode": "qr-code.png",
+        "listTitle": "FREIE TERMINE HEUTE"
+    }
+}

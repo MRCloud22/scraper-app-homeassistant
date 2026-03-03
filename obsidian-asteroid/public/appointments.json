@@ -1,0 +1,19 @@
+{
+    "success": true,
+    "appointments": [
+        {
+            "date": "03.03.2026",
+            "time": "12:00",
+            "treatment": "Aromamassage 20 Minuten",
+            "price": "37 €",
+            "imageUrl": null
+        },
+        {
+            "date": "03.03.2026",
+            "time": "13:30",
+            "treatment": "Gesichtsbehandlung 45 Minuten",
+            "price": "55 €",
+            "imageUrl": null
+        }
+    ]
+}
