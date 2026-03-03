@@ -28,6 +28,15 @@ interface CircleConfig {
     color?: string;   // CSS color value, e.g. "#5E7367" or "rgba(94,115,103,0.8)"
 }
 
+// Config for free-floating elements (logo, QR): size + optional absolute position
+interface ElementConfig {
+    size?: number;    // size in px (height for logo, width/height for QR)
+    top?: number;
+    right?: number;
+    bottom?: number;
+    left?: number;
+}
+
 interface CustomSettings {
     logo?: string;
     heroImage?: string;       // image filename for the hero circle
@@ -42,7 +51,8 @@ interface CustomSettings {
     qrLabel?: string;
     qrUrl?: string;
     theme?: string;
-    logoSize?: number;            // logo height in px (width scales automatically)
+    logoConfig?: ElementConfig;   // size + optional absolute position
+    qrConfig?: ElementConfig;     // size + optional absolute position
     // Per-circle position + size (all in px on the 1080×1920 reference canvas)
     circleMain?: CircleConfig;    // large green background circle
     circleAccent?: CircleConfig;  // small mint accent circle
@@ -241,16 +251,33 @@ export default function Signage2Page() {
                     <header className={styles.header}>
                         <div
                             className={styles.logoIcon}
-                            style={customSettings.logoSize ? { width: customSettings.logoSize, height: customSettings.logoSize } : undefined}
+                            style={(() => {
+                                const lc = customSettings.logoConfig;
+                                if (!lc) return undefined;
+                                const hasPos = lc.top !== undefined || lc.right !== undefined
+                                    || lc.bottom !== undefined || lc.left !== undefined;
+                                const s: React.CSSProperties = {};
+                                if (lc.size) { s.width = lc.size; s.height = lc.size; }
+                                if (hasPos) {
+                                    s.position = 'absolute'; s.zIndex = 10;
+                                    if (lc.top !== undefined) s.top = lc.top;
+                                    if (lc.right !== undefined) s.right = lc.right;
+                                    if (lc.bottom !== undefined) s.bottom = lc.bottom;
+                                    if (lc.left !== undefined) s.left = lc.left;
+                                }
+                                return s;
+                            })()}
                         >
                             {logoSrc ? (
                                 <img
                                     src={logoSrc}
                                     alt="Logo"
-                                    style={customSettings.logoSize ? { height: customSettings.logoSize, width: 'auto' } : undefined}
+                                    style={customSettings.logoConfig?.size
+                                        ? { height: customSettings.logoConfig.size, width: 'auto' }
+                                        : undefined}
                                 />
                             ) : (!settingsLoaded && (
-                                <Flower size={customSettings.logoSize ?? 80} color="#5E7367" />
+                                <Flower size={customSettings.logoConfig?.size ?? 80} color="#5E7367" />
                             ))}
                         </div>
                         <div className={styles.logoText}>
@@ -300,12 +327,34 @@ export default function Signage2Page() {
 
                     {/* Footer */}
                     <footer className={styles.footer}>
-                        <div className={styles.qrSection}>
+                        <div
+                            className={styles.qrSection}
+                            style={(() => {
+                                const qc = customSettings.qrConfig;
+                                if (!qc) return undefined;
+                                const hasPos = qc.top !== undefined || qc.right !== undefined
+                                    || qc.bottom !== undefined || qc.left !== undefined;
+                                const s: React.CSSProperties = {};
+                                // Notice: size is NOT applied here, but on the image!
+                                if (hasPos) {
+                                    s.position = 'absolute'; s.zIndex = 10;
+                                    if (qc.top !== undefined) s.top = qc.top;
+                                    if (qc.right !== undefined) s.right = qc.right;
+                                    if (qc.bottom !== undefined) s.bottom = qc.bottom;
+                                    if (qc.left !== undefined) s.left = qc.left;
+                                }
+                                return s;
+                            })()}
+                        >
                             <div className={styles.qrContainer}>
                                 {qrSrc ? (
-                                    <img src={qrSrc} alt="QR" />
+                                    <img
+                                        src={qrSrc}
+                                        alt="QR"
+                                        style={customSettings.qrConfig?.size ? { width: customSettings.qrConfig.size, height: customSettings.qrConfig.size } : undefined}
+                                    />
                                 ) : (!settingsLoaded && (
-                                    <QrCode size={130} color="#5E7367" />
+                                    <QrCode size={customSettings.qrConfig?.size ?? 150} color="#5E7367" />
                                 ))}
                             </div>
                             <div className={styles.qrInfoText}>

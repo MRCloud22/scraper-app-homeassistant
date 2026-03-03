@@ -12,7 +12,14 @@
         "qrLabel": "Infos & Buchung unter",
         "qrUrl": "beautykuppel.de/termine",
         "theme": "light",
-        "logoSize": 90,
+        "logoConfig": {
+            "size": 90,
+            "top": 44,
+            "left": 50
+        },
+        "qrConfig": {
+            "size": 150
+        },
         "circleMain": {
             "size": 1200,
             "top": 280,
