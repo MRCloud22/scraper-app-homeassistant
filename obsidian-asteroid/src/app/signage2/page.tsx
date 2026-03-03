@@ -25,6 +25,7 @@ interface CircleConfig {
     right?: number;
     bottom?: number;
     left?: number;
+    color?: string;   // CSS color value, e.g. "#5E7367" or "rgba(94,115,103,0.8)"
 }
 
 interface CustomSettings {
@@ -41,6 +42,7 @@ interface CustomSettings {
     qrLabel?: string;
     qrUrl?: string;
     theme?: string;
+    logoSize?: number;            // logo height in px (width scales automatically)
     // Per-circle position + size (all in px on the 1080×1920 reference canvas)
     circleMain?: CircleConfig;    // large green background circle
     circleAccent?: CircleConfig;  // small mint accent circle
@@ -64,6 +66,7 @@ function buildCircleStyle(
     if (merged.right !== undefined) style.right = `${merged.right}px`;
     if (merged.bottom !== undefined) style.bottom = `${merged.bottom}px`;
     if (merged.left !== undefined) style.left = `${merged.left}px`;
+    if (merged.color !== undefined) style.backgroundColor = merged.color;
     return style;
 }
 
@@ -236,11 +239,18 @@ export default function Signage2Page() {
 
                     {/* Header */}
                     <header className={styles.header}>
-                        <div className={styles.logoIcon}>
+                        <div
+                            className={styles.logoIcon}
+                            style={customSettings.logoSize ? { width: customSettings.logoSize, height: customSettings.logoSize } : undefined}
+                        >
                             {logoSrc ? (
-                                <img src={logoSrc} alt="Logo" />
+                                <img
+                                    src={logoSrc}
+                                    alt="Logo"
+                                    style={customSettings.logoSize ? { height: customSettings.logoSize, width: 'auto' } : undefined}
+                                />
                             ) : (!settingsLoaded && (
-                                <Flower size={80} color="#5E7367" />
+                                <Flower size={customSettings.logoSize ?? 80} color="#5E7367" />
                             ))}
                         </div>
                         <div className={styles.logoText}>
