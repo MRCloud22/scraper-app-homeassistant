@@ -199,27 +199,33 @@ export default function Signage2Page() {
         return () => clearInterval(pollTimer);
     }, [fetchAppointments, fetchCustomSettings, mounted]);
 
+    const futureAppointments = useMemo(() =>
+        filterPastAppointments(appointments),
+        [appointments]);
+
     useEffect(() => {
-        if (!mounted || appointments.length <= VISIBLE_COUNT) return;
+        if (!mounted || futureAppointments.length <= VISIBLE_COUNT) {
+            setVisibleStart(0);
+            return;
+        }
 
         const rotateMs = settings.signageRotationInterval * 1000;
         const rotateTimer = setInterval(() => {
             setVisibleStart((prev: number) => {
                 const next = prev + VISIBLE_COUNT;
-                return next >= appointments.length ? 0 : next;
+                return next >= futureAppointments.length ? 0 : next;
             });
         }, rotateMs);
 
         return () => clearInterval(rotateTimer);
-    }, [appointments.length, settings.signageRotationInterval, mounted]);
+    }, [futureAppointments.length, settings.signageRotationInterval, mounted]);
 
-    const futureAppointments = useMemo(() =>
-        filterPastAppointments(appointments),
-        [appointments]);
+    // Ensure we don't display an empty page if data shrinks out of bounds
+    const safeVisibleStart = visibleStart >= futureAppointments.length ? 0 : visibleStart;
 
     const visibleAppointments = futureAppointments.slice(
-        visibleStart,
-        visibleStart + VISIBLE_COUNT
+        safeVisibleStart,
+        safeVisibleStart + VISIBLE_COUNT
     );
 
     // Asset path: static = relative media folder, HA = API endpoint
