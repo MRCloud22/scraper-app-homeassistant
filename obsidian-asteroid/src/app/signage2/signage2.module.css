@@ -26,6 +26,13 @@
     position: relative;
     display: flex;
     flex-direction: column;
+    /* Hidden until settings are loaded — prevents "flash of default layout" */
+    opacity: 0;
+    transition: opacity 0.4s ease-in;
+}
+
+.container.ready {
+    opacity: 1;
 }
 
 /* Viewport shell — fills the browser and centres the scaled canvas */

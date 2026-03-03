@@ -261,7 +261,7 @@ export default function Signage2Page() {
         <div className={styles.viewportWrapper} ref={wrapperRef}>
             <div className={styles.scaleWrapper} ref={scaleRef}>
                 <div
-                    className={`${styles.container} ${customSettings.theme === 'dark' ? styles.darkTheme : ''}`}
+                    className={`${styles.container} ${customSettings.theme === 'dark' ? styles.darkTheme : ''} ${settingsLoaded ? styles.ready : ''}`}
                     style={{ backgroundImage: bgUrl, backgroundSize: 'cover' }}
                 >
                     {/* Time Layer */}
