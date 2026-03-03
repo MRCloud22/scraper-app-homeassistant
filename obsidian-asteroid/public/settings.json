@@ -4,6 +4,7 @@
         "subtitle": "Therme Bad Aibling",
         "logo": "logo.png",
         "backgroundImage": "none",
+        "backgroundColor": "#F4F1E9",
         "heroImage": "spa-hero.png",
         "massageImage": "massage.png",
         "qrCode": "qr-code.png",

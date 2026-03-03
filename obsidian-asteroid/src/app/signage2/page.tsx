@@ -43,6 +43,7 @@ interface CustomSettings {
     massageImage?: string;    // image filename for the massage circle
     qrCode?: string;
     backgroundImage?: string;
+    backgroundColor?: string;    // CSS color for the page background (default: #F4F1E9)
     title?: string;
     subtitle?: string;
     listTitle?: string;
@@ -298,7 +299,7 @@ export default function Signage2Page() {
             <div className={styles.scaleWrapper} ref={scaleRef}>
                 <div
                     className={`${styles.container} ${customSettings.theme === 'dark' ? styles.darkTheme : ''} ${settingsLoaded ? styles.ready : ''}`}
-                    style={{ backgroundImage: bgUrl, backgroundSize: 'cover' }}
+                    style={{ backgroundImage: bgUrl, backgroundSize: 'cover', backgroundColor: customSettings.backgroundColor || undefined }}
                 >
                     {/* Time Layer */}
                     {customSettings.timeConfig?.show !== false && currentTime && (
