@@ -330,3 +330,38 @@
 .darkTheme .versionTag {
     color: rgba(255, 255, 255, 0.2);
 }
+
+/* ── Time / Date display ──────────────────────────────────── */
+
+.timeDisplayWrapper {
+    /* outer container — position is set via inline style from page.tsx */
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.timeDisplay {
+    /* clock line – font-size comes from inline style */
+    white-space: nowrap;
+    line-height: 1.1;
+}
+
+.timeDate {
+    /*
+     * Date line: stretches to exactly the width of .timeDisplay above.
+     * font-size is scaled so the long weekday + date text fills the full width.
+     * We use a slightly smaller size and let justify spacing do the rest.
+     */
+    display: block;
+    width: 100%;
+    /* same bounding box as the time string */
+    text-align: justify;
+    text-align-last: justify;
+    font-size: 0.38em;
+    /* relative to .timeDisplayWrapper font-size; tune here */
+    font-weight: 500;
+    line-height: 1.4;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    overflow: visible;
+}

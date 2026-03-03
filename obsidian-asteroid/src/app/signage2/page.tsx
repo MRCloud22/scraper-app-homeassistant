@@ -267,25 +267,39 @@ export default function Signage2Page() {
                     {/* Time Layer */}
                     {customSettings.timeConfig?.show !== false && currentTime && (
                         <div
-                            className={styles.timeDisplay}
+                            className={styles.timeDisplayWrapper}
                             style={(() => {
                                 const tc = customSettings.timeConfig;
                                 const s: React.CSSProperties = {
                                     position: 'absolute',
                                     zIndex: 20,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'flex-end',
                                     // default position if fully undefined
                                     top: (tc?.top ?? tc?.right ?? tc?.bottom ?? tc?.left) === undefined ? 40 : tc?.top,
                                     right: (tc?.top ?? tc?.right ?? tc?.bottom ?? tc?.left) === undefined ? 60 : tc?.right,
                                     bottom: tc?.bottom,
                                     left: tc?.left,
-                                    fontSize: tc?.size ? `${tc.size}px` : '48px',
                                     color: tc?.color || '#5E7367',
-                                    fontWeight: '600'
                                 };
                                 return s;
                             })()}
                         >
-                            {currentTime.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })} Uhr
+                            <div
+                                className={styles.timeDisplay}
+                                style={{
+                                    fontSize: customSettings.timeConfig?.size ? `${customSettings.timeConfig.size}px` : '48px',
+                                    fontWeight: '600',
+                                    lineHeight: 1.1,
+                                    whiteSpace: 'nowrap',
+                                }}
+                            >
+                                {currentTime.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })} Uhr
+                            </div>
+                            <div className={styles.timeDate}>
+                                {currentTime.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' })}
+                            </div>
                         </div>
                     )}
 
