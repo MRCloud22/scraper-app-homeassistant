@@ -55,6 +55,13 @@
             "bottom": 30,
             "right": 40,
             "color": "rgba(94, 115, 103, 0.7)"
+        },
+        "promoConfig": {
+            "show": true,
+            "text": "Termine können direkt an der\\nBeautykuppel oder über die\\nAnlage am Drehkreuz\\nvereinbart werden.",
+            "duration": 8,
+            "fontSize": 38,
+            "color": "#5E7367"
         }
     }
 }

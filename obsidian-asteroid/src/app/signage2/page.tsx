@@ -60,6 +60,13 @@ interface CustomSettings {
     heroCircle?: CircleConfig;    // hero image circle
     timeConfig?: ElementConfig & { show?: boolean, color?: string };
     lastUpdatedConfig?: ElementConfig & { show?: boolean, color?: string };
+    promoConfig?: {
+        text?: string;         // The promo text to show (supports \n for line breaks)
+        duration?: number;     // How many seconds to show the promo (default: 8)
+        show?: boolean;        // Enable/disable (default: true)
+        fontSize?: number;     // Font size in px (default: 38)
+        color?: string;        // Text color (default: #5E7367)
+    };
 }
 
 /** Builds an inline style for one circle, merging defaults with settings overrides. */
@@ -95,6 +102,7 @@ export default function Signage2Page() {
     const [settingsLoaded, setSettingsLoaded] = useState(false);
     const [lastUpdated, setLastUpdated] = useState<string | null>(null);
     const [currentTime, setCurrentTime] = useState<Date | null>(null);
+    const [showPromo, setShowPromo] = useState(false);
     const VISIBLE_COUNT = 5;
 
     const wrapperRef = useRef<HTMLDivElement>(null);
@@ -203,22 +211,45 @@ export default function Signage2Page() {
         filterPastAppointments(appointments),
         [appointments]);
 
+    // --- Rotation logic with promo interstitial ---
     useEffect(() => {
         if (!mounted || futureAppointments.length <= VISIBLE_COUNT) {
             setVisibleStart(0);
+            setShowPromo(false);
             return;
         }
 
+        const promoEnabled = customSettings.promoConfig?.show !== false && !!customSettings.promoConfig?.text;
         const rotateMs = settings.signageRotationInterval * 1000;
+        const promoDurationMs = (customSettings.promoConfig?.duration ?? 8) * 1000;
+
+        if (showPromo) {
+            // Currently showing promo — wait, then go back to first page
+            const promoTimer = setTimeout(() => {
+                setShowPromo(false);
+                setVisibleStart(0);
+            }, promoDurationMs);
+            return () => clearTimeout(promoTimer);
+        }
+
+        // Normal appointment rotation
         const rotateTimer = setInterval(() => {
             setVisibleStart((prev: number) => {
                 const next = prev + VISIBLE_COUNT;
-                return next >= futureAppointments.length ? 0 : next;
+                if (next >= futureAppointments.length) {
+                    // Completed a full cycle
+                    if (promoEnabled) {
+                        setShowPromo(true);
+                        return prev; // keep current until promo takes over
+                    }
+                    return 0; // no promo → loop back
+                }
+                return next;
             });
         }, rotateMs);
 
         return () => clearInterval(rotateTimer);
-    }, [futureAppointments.length, settings.signageRotationInterval, mounted]);
+    }, [futureAppointments.length, settings.signageRotationInterval, mounted, showPromo, customSettings.promoConfig]);
 
     // Ensure we don't display an empty page if data shrinks out of bounds
     const safeVisibleStart = visibleStart >= futureAppointments.length ? 0 : visibleStart;
@@ -357,7 +388,18 @@ export default function Signage2Page() {
                     <main className={styles.main}>
                         <h2 className={styles.title} dangerouslySetInnerHTML={{ __html: (settingsLoaded ? (customSettings.listTitle ?? "") : "FREIE TERMINE<br/>HEUTE").replace('\\n', '<br/>') }} />
 
-                        {loading && appointments.length === 0 ? (
+                        {showPromo ? (
+                            <div
+                                className={styles.promoScreen}
+                                style={{
+                                    fontSize: customSettings.promoConfig?.fontSize ? `${customSettings.promoConfig.fontSize}px` : '38px',
+                                    color: customSettings.promoConfig?.color || '#5E7367',
+                                }}
+                                dangerouslySetInnerHTML={{
+                                    __html: (customSettings.promoConfig?.text || '').replace(/\\n/g, '<br/>')
+                                }}
+                            />
+                        ) : loading && appointments.length === 0 ? (
                             <div className={styles.emptyState}>Laden...</div>
                         ) : futureAppointments.length === 0 ? (
                             <div className={styles.emptyState}>{settingsLoaded ? (customSettings.emptyText ?? "") : (settings.emptyStateText || 'Aktuell sind keine freien Termine vorhanden.')}</div>
