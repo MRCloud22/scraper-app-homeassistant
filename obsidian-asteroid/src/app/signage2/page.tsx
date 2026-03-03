@@ -276,6 +276,8 @@ export default function Signage2Page() {
                                     display: 'flex',
                                     flexDirection: 'column',
                                     alignItems: 'flex-end',
+                                    // font-size lives here so child em-values are relative to the clock size
+                                    fontSize: tc?.size ? `${tc.size}px` : '48px',
                                     // default position if fully undefined
                                     top: (tc?.top ?? tc?.right ?? tc?.bottom ?? tc?.left) === undefined ? 40 : tc?.top,
                                     right: (tc?.top ?? tc?.right ?? tc?.bottom ?? tc?.left) === undefined ? 60 : tc?.right,
@@ -286,15 +288,7 @@ export default function Signage2Page() {
                                 return s;
                             })()}
                         >
-                            <div
-                                className={styles.timeDisplay}
-                                style={{
-                                    fontSize: customSettings.timeConfig?.size ? `${customSettings.timeConfig.size}px` : '48px',
-                                    fontWeight: '600',
-                                    lineHeight: 1.1,
-                                    whiteSpace: 'nowrap',
-                                }}
-                            >
+                            <div className={styles.timeDisplay}>
                                 {currentTime.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })} Uhr
                             </div>
                             <div className={styles.timeDate}>

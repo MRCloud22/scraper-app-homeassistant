@@ -341,24 +341,24 @@
 }
 
 .timeDisplay {
-    /* clock line – font-size comes from inline style */
+    /* clock line – font-size is inherited from .timeDisplayWrapper inline style */
     white-space: nowrap;
     line-height: 1.1;
+    font-weight: 600;
 }
 
 .timeDate {
     /*
      * Date line: stretches to exactly the width of .timeDisplay above.
-     * font-size is scaled so the long weekday + date text fills the full width.
-     * We use a slightly smaller size and let justify spacing do the rest.
+     * font-size is relative to the wrapper's font-size (= the clock size),
+     * so 0.42em of 48px ≈ 20px — nicely visible below the clock.
      */
     display: block;
     width: 100%;
     /* same bounding box as the time string */
     text-align: justify;
     text-align-last: justify;
-    font-size: 0.38em;
-    /* relative to .timeDisplayWrapper font-size; tune here */
+    font-size: 0.42em;
     font-weight: 500;
     line-height: 1.4;
     letter-spacing: 0.01em;
