@@ -219,16 +219,36 @@ export default function Signage2Page() {
 
     // --- Rotation logic with promo interstitial ---
     useEffect(() => {
-        if (!mounted || futureAppointments.length <= VISIBLE_COUNT) {
-            setVisibleStart(0);
-            setShowPromo(false);
-            return;
-        }
+        if (!mounted) return;
 
         const promoEnabled = customSettings.promoConfig?.show !== false && !!customSettings.promoConfig?.text;
         const rotateMs = settings.signageRotationInterval * 1000;
         const promoDurationMs = (customSettings.promoConfig?.duration ?? 8) * 1000;
 
+        // Single page (or no appointments): no page rotation needed
+        if (futureAppointments.length <= VISIBLE_COUNT) {
+            setVisibleStart(0);
+
+            if (!promoEnabled || futureAppointments.length === 0) {
+                setShowPromo(false);
+                return;
+            }
+
+            // Single page with promo: cycle between appointments ↔ promo
+            if (showPromo) {
+                const promoTimer = setTimeout(() => {
+                    setShowPromo(false);
+                }, promoDurationMs);
+                return () => clearTimeout(promoTimer);
+            } else {
+                const showTimer = setTimeout(() => {
+                    setShowPromo(true);
+                }, rotateMs);
+                return () => clearTimeout(showTimer);
+            }
+        }
+
+        // Multiple pages
         if (showPromo) {
             // Currently showing promo — wait, then go back to first page
             const promoTimer = setTimeout(() => {
