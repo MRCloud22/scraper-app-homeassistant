@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
-import path from 'path';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,7 +14,7 @@ export async function GET() {
         }
 
         return NextResponse.json({ error: 'Settings not found' }, { status: 404 });
-    } catch (err: any) {
-        return NextResponse.json({ error: err.message }, { status: 500 });
+    } catch (err) {
+        return NextResponse.json({ error: (err as Error).message }, { status: 500 });
     }
 }

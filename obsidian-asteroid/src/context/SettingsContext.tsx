@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-export interface AppSettings {
+interface AppSettings {
     signageImageWidth: number; // in pixels
     signageRotationInterval: number; // in seconds
     signageRefreshInterval: number; // in minutes
@@ -37,6 +37,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
             const stored = localStorage.getItem(STORAGE_KEY);
             if (stored) {
                 const parsed = JSON.parse(stored);
+                // eslint-disable-next-line react-hooks/set-state-in-effect
                 setSettings({ ...defaultSettings, ...parsed });
             }
         } catch (error) {

@@ -183,7 +183,7 @@ export default function Signage2Page() {
                 setSettingsLoaded(true);
                 return;
             }
-        } catch (_apiErr) {
+        } catch {
             // API unreachable — static/FTP mode
         }
 
@@ -197,7 +197,7 @@ export default function Signage2Page() {
                 setIsStaticMode(true);
                 setSettingsLoaded(true);
             }
-        } catch (_staticErr) {
+        } catch {
             // No settings available
         }
     }, []);

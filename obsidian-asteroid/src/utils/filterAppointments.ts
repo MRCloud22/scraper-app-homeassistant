@@ -2,10 +2,9 @@
  * Shared utility to filter out appointments that are in the past.
  * Handles German date formats (e.g., "Di, 13.01.2026" or "13.01.").
  */
-export interface Appointment {
+interface Appointment {
     date: string;
     time: string;
-    [key: string]: any;
 }
 
 export function filterPastAppointments<T extends Appointment>(appointments: T[]): T[] {

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const fs = require('fs');
 const path = require('path');
 const ftp = require('basic-ftp');
@@ -26,7 +27,7 @@ async function sync() {
         console.log('Available directories in /app:');
         try {
             fs.readdirSync('/app').forEach(f => console.log(' -', f));
-        } catch (e) { }
+        } catch { }
     } else {
         const fileCount = fs.readdirSync(STATIC_BUILD_DIR).length;
         console.log(`Static build OK: ${STATIC_BUILD_DIR} (${fileCount} items)`);
@@ -153,7 +154,7 @@ async function sync() {
                     if (fs.existsSync(lastSyncFile)) {
                         try {
                             lastSyncData = JSON.parse(fs.readFileSync(lastSyncFile, 'utf8'));
-                        } catch (e) { }
+                        } catch { }
                     }
 
                     const isVersionUpgrade = currentVersion !== lastSyncData.version;

@@ -16,12 +16,6 @@ interface Appointment {
   imageUrl: string | null;
 }
 
-interface ApiResponse {
-  success: boolean;
-  appointments: Appointment[];
-  lastUpdated?: string;
-  error?: string;
-}
 
 export default function Home() {
   const { settings } = useSettings();
@@ -65,8 +59,8 @@ export default function Home() {
       } else {
         setError('Ungültiges Datenformat empfangen');
       }
-    } catch (err: any) {
-      setError(`Verbindung fehlgeschlagen: ${err.message}`);
+    } catch (err) {
+      setError(`Verbindung fehlgeschlagen: ${(err as Error).message}`);
       console.error('Fetch error:', err);
     } finally {
       setLoading(false);
@@ -159,7 +153,7 @@ export default function Home() {
         <div className={styles.emptyContainer}>
           <Sparkles size={48} />
           <h2>Keine Termine verfügbar</h2>
-          <p>Aktuell sind keine freien Termine vorhanden.</p>
+          <p>{settings.emptyStateText || 'Aktuell sind keine freien Termine vorhanden.'}</p>
         </div>
       )}
 

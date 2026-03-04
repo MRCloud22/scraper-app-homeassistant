@@ -21,6 +21,7 @@ interface Appointment {
 export default function Signage1Page() {
     const { settings } = useSettings();
     const [appointments, setAppointments] = useState<Appointment[]>([]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [customSettings, setCustomSettings] = useState<any>({});
     const [visibleStart, setVisibleStart] = useState(0);
     const [mounted, setMounted] = useState(false);

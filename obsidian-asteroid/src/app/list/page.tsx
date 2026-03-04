@@ -48,6 +48,7 @@ function ListContent() {
                 setError(data.error || 'Fehler beim Laden');
             }
         } catch (err) {
+            console.error('Fetch failed:', err);
             setError('Verbindung fehlgeschlagen');
         } finally {
             setLoading(false);

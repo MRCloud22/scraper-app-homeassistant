@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const puppeteer = require('puppeteer');
 const fs = require('fs');
 const path = require('path');
@@ -71,7 +72,7 @@ async function scrape() {
             // Wait for the main container or specific rows
             await page.waitForSelector('a.table-row', { timeout: 15000 });
             rowsExist = true;
-        } catch (e) {
+        } catch {
             console.log('No appointment rows found (Shop might be fully booked).');
         }
 
