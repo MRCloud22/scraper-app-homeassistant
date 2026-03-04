@@ -53,6 +53,15 @@ function generateRss() {
     <pubDate>${new Date().toUTCString()}</pubDate>
   </item>`;
     } else {
+      // Intro item at the very beginning
+      rss += `
+  <item>
+    <title>Heutige freie Termine</title>
+    <link>https://shop.beautykuppel-therme-badaibling.de/</link>
+    <guid isPermaLink="false">separator-start</guid>
+    <pubDate>${new Date().toUTCString()}</pubDate>
+  </item>`;
+
       appointments.forEach((app, index) => {
         const guid = Buffer.from(`${app.date}-${app.time}-${app.treatment}`).toString('base64');
         const timeFormatted = (app.time || '').replace(':', '.');
