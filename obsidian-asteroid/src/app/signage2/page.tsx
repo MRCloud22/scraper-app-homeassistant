@@ -15,6 +15,7 @@ interface Appointment {
     time: string;
     treatment: string;
     price: string;
+    originalPrice?: string;
     imageUrl: string | null;
 }
 
@@ -461,7 +462,10 @@ export default function Signage2Page() {
                                             <div className={styles.time}>{apt.time} Uhr</div>
                                             <div className={styles.treatment}>{apt.treatment}</div>
                                         </div>
-                                        <div className={styles.price}>{apt.price || '45€'}</div>
+                                        <div className={styles.priceContainer}>
+                                            {apt.originalPrice && <div className={styles.originalPrice}>{apt.originalPrice}</div>}
+                                            <div className={styles.price}>{apt.price || '45€'}</div>
+                                        </div>
                                     </div>
                                 ))}
                             </div>

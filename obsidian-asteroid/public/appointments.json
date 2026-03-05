@@ -1,19 +1,70 @@
 {
-    "success": true,
-    "appointments": [
-        {
-            "date": "03.03.2026",
-            "time": "12:00",
-            "treatment": "Aromamassage 20 Minuten",
-            "price": "37 €",
-            "imageUrl": null
-        },
-        {
-            "date": "03.03.2026",
-            "time": "13:30",
-            "treatment": "Gesichtsbehandlung 45 Minuten",
-            "price": "55 €",
-            "imageUrl": null
-        }
-    ]
+  "success": true,
+  "appointments": [
+    {
+      "date": "Do, 05.03.2026",
+      "time": "17:30",
+      "treatment": "Aromamassage 20 Minuten",
+      "price": "€ 41,40",
+      "originalPrice": "€ 46,00",
+      "bookingUrl": "https://shop.beautykuppel-therme-badaibling.de/reservations/template/183/?day=5&month=3&year=2026&hour=17&minute=30&check=1",
+      "imageUrl": "https://shop.beautykuppel-therme-badaibling.de/extern/template-pictures/56172.jpg"
+    },
+    {
+      "date": "Do, 05.03.2026",
+      "time": "17:30",
+      "treatment": "Aromamassage 40 Minuten",
+      "price": "€ 76,00",
+      "originalPrice": null,
+      "bookingUrl": "https://shop.beautykuppel-therme-badaibling.de/reservations/template/184/?day=05&month=03&year=2026&hour=17&minute=30&check=1",
+      "imageUrl": "https://shop.beautykuppel-therme-badaibling.de/extern/template-pictures/56173.jpg"
+    },
+    {
+      "date": "Do, 05.03.2026",
+      "time": "17:30",
+      "treatment": "Aromamassage 60 Minuten",
+      "price": "€ 109,00",
+      "originalPrice": null,
+      "bookingUrl": "https://shop.beautykuppel-therme-badaibling.de/reservations/template/185/?day=05&month=03&year=2026&hour=17&minute=30&check=1",
+      "imageUrl": "https://shop.beautykuppel-therme-badaibling.de/extern/template-pictures/56174.jpg"
+    },
+    {
+      "date": "Do, 05.03.2026",
+      "time": "17:40",
+      "treatment": "Aromamassage 20 Minuten",
+      "price": "€ 41,40",
+      "originalPrice": "€ 46,00",
+      "bookingUrl": "https://shop.beautykuppel-therme-badaibling.de/reservations/template/183/?day=05&month=03&year=2026&hour=17&minute=40&check=1",
+      "imageUrl": "https://shop.beautykuppel-therme-badaibling.de/extern/template-pictures/56172.jpg"
+    },
+    {
+      "date": "Do, 05.03.2026",
+      "time": "17:40",
+      "treatment": "Aromamassage 40 Minuten",
+      "price": "€ 76,00",
+      "originalPrice": null,
+      "bookingUrl": "https://shop.beautykuppel-therme-badaibling.de/reservations/template/184/?day=05&month=03&year=2026&hour=17&minute=40&check=1",
+      "imageUrl": "https://shop.beautykuppel-therme-badaibling.de/extern/template-pictures/56173.jpg"
+    },
+    {
+      "date": "Do, 05.03.2026",
+      "time": "17:40",
+      "treatment": "Aromamassage 60 Minuten",
+      "price": "€ 109,00",
+      "originalPrice": null,
+      "bookingUrl": "https://shop.beautykuppel-therme-badaibling.de/reservations/template/185/?day=05&month=03&year=2026&hour=17&minute=40&check=1",
+      "imageUrl": "https://shop.beautykuppel-therme-badaibling.de/extern/template-pictures/56174.jpg"
+    },
+    {
+      "date": "Do, 05.03.2026",
+      "time": "18:20",
+      "treatment": "Aromamassage 20 Minuten",
+      "price": "€ 41,40",
+      "originalPrice": "€ 46,00",
+      "bookingUrl": "https://shop.beautykuppel-therme-badaibling.de/reservations/template/183/?day=5&month=3&year=2026&hour=18&minute=20&check=1",
+      "imageUrl": "https://shop.beautykuppel-therme-badaibling.de/extern/template-pictures/56172.jpg"
+    }
+  ],
+  "count": 7,
+  "lastUpdated": "2026-03-05T15:10:37.333Z"
 }

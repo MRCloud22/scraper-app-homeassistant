@@ -60,9 +60,23 @@
     font-weight: 400;
 }
 
+.priceContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    padding-right: 15px;
+}
+
+.originalPrice {
+    font-size: 11px;
+    color: #999;
+    text-decoration: line-through;
+    margin-bottom: -2px;
+}
+
 .price {
     text-align: right;
-    padding-right: 15px;
 }
 
 .action {
@@ -190,6 +204,7 @@
         opacity: 0;
         transform: translateY(20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -198,17 +213,47 @@
 
 .rowsContainer .row {
     animation: slideIn 0.4s ease-out forwards;
-    opacity: 0; /* Start invisible */
+    opacity: 0;
+    /* Start invisible */
 }
 
 /* Stagger delays for up to 10 items */
-.rowsContainer .row:nth-child(1) { animation-delay: 0.05s; }
-.rowsContainer .row:nth-child(2) { animation-delay: 0.1s; }
-.rowsContainer .row:nth-child(3) { animation-delay: 0.15s; }
-.rowsContainer .row:nth-child(4) { animation-delay: 0.2s; }
-.rowsContainer .row:nth-child(5) { animation-delay: 0.25s; }
-.rowsContainer .row:nth-child(6) { animation-delay: 0.3s; }
-.rowsContainer .row:nth-child(7) { animation-delay: 0.35s; }
-.rowsContainer .row:nth-child(8) { animation-delay: 0.4s; }
-.rowsContainer .row:nth-child(9) { animation-delay: 0.45s; }
-.rowsContainer .row:nth-child(10) { animation-delay: 0.5s; }
+.rowsContainer .row:nth-child(1) {
+    animation-delay: 0.05s;
+}
+
+.rowsContainer .row:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.rowsContainer .row:nth-child(3) {
+    animation-delay: 0.15s;
+}
+
+.rowsContainer .row:nth-child(4) {
+    animation-delay: 0.2s;
+}
+
+.rowsContainer .row:nth-child(5) {
+    animation-delay: 0.25s;
+}
+
+.rowsContainer .row:nth-child(6) {
+    animation-delay: 0.3s;
+}
+
+.rowsContainer .row:nth-child(7) {
+    animation-delay: 0.35s;
+}
+
+.rowsContainer .row:nth-child(8) {
+    animation-delay: 0.4s;
+}
+
+.rowsContainer .row:nth-child(9) {
+    animation-delay: 0.45s;
+}
+
+.rowsContainer .row:nth-child(10) {
+    animation-delay: 0.5s;
+}

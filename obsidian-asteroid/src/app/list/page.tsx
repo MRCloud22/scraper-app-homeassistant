@@ -12,6 +12,7 @@ interface Appointment {
     time: string;
     treatment: string;
     price: string;
+    originalPrice?: string;
     bookingUrl: string;
     imageUrl: string | null;
 }
@@ -121,7 +122,10 @@ function ListContent() {
                             <div className={styles.cell}>{apt.date}</div>
                             <div className={styles.cell}>{apt.time}</div>
                             <div className={styles.cell + ' ' + styles.treatment}>{apt.treatment}</div>
-                            <div className={styles.cell + ' ' + styles.price}>{apt.price}</div>
+                            <div className={styles.cell + ' ' + styles.priceContainer}>
+                                {apt.originalPrice && <div className={styles.originalPrice}>{apt.originalPrice}</div>}
+                                <div className={styles.price}>{apt.price}</div>
+                            </div>
                             <div className={styles.action}>
                                 <a
                                     href={apt.bookingUrl}

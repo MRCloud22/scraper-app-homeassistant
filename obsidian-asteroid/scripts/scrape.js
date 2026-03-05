@@ -112,12 +112,23 @@ async function scrape() {
                         const date = cells[0]?.textContent?.trim() || '';
                         const time = cells[1]?.textContent?.trim() || '';
                         const treatment = treatmentEl?.textContent?.trim() || '';
-                        const price = cells[3]?.textContent?.trim() || '';
+
+                        let price = cells[3]?.textContent?.trim() || '';
+                        let originalPrice = null;
+
+                        if (cells[3]) {
+                            const newPriceEl = cells[3].querySelector('.prices__new');
+                            const oldPriceEl = cells[3].querySelector('.prices__old');
+                            if (newPriceEl && oldPriceEl) {
+                                price = newPriceEl.textContent.trim();
+                                originalPrice = oldPriceEl.textContent.trim();
+                            }
+                        }
 
                         const rawHref = href.startsWith('http') ? href : `https://shop.beautykuppel-therme-badaibling.de/${href}`;
                         const bookingUrl = rawHref.replace(/([?&])dsId=[^&]*(&|$)/, '$1').replace(/[?&]$/, '');
 
-                        return { date, time, treatment, price, bookingUrl };
+                        return { date, time, treatment, price, originalPrice, bookingUrl };
                     }).filter(a => a.date && a.time && a.treatment);
                 });
 
