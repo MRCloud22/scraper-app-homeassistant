@@ -396,24 +396,3 @@
     white-space: nowrap;
     overflow: visible;
 }
-
-:global {
-
-    /* --- TICKER-KILLER CSS --- */
-    /* Zwingt den Player dazu, den Ticker unter allen Umständen restlos verschwinden zu lassen, selbst wenn pisignage.js ihn einblenden will */
-    #ticker,
-    #marquee,
-    .ticker,
-    #tickertext,
-    .ticker-hd {
-        display: none !important;
-        visibility: hidden !important;
-        opacity: 0 !important;
-        height: 0px !important;
-        width: 0px !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        z-index: -9999 !important;
-        pointer-events: none !important;
-    }
-}
