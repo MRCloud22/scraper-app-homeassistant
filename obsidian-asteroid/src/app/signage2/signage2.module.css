@@ -235,10 +235,11 @@
 }
 
 .originalPrice {
-    font-size: 24px;
-    color: #999;
+    font-size: 36px;
+    font-weight: 700;
+    color: #D32F2F;
     text-decoration: line-through;
-    margin-bottom: -5px;
+    margin-top: -8px;
 }
 
 .price {

@@ -123,8 +123,8 @@ function ListContent() {
                             <div className={styles.cell}>{apt.time}</div>
                             <div className={styles.cell + ' ' + styles.treatment}>{apt.treatment}</div>
                             <div className={styles.cell + ' ' + styles.priceContainer}>
-                                {apt.originalPrice && <div className={styles.originalPrice}>{apt.originalPrice}</div>}
                                 <div className={styles.price}>{apt.price}</div>
+                                {apt.originalPrice && <div className={styles.originalPrice}>{apt.originalPrice}</div>}
                             </div>
                             <div className={styles.action}>
                                 <a
