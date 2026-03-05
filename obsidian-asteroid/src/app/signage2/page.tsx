@@ -463,8 +463,8 @@ export default function Signage2Page() {
                                             <div className={styles.treatment}>{apt.treatment}</div>
                                         </div>
                                         <div className={styles.priceContainer}>
-                                            <div className={styles.price}>{apt.price || '45€'}</div>
                                             {apt.originalPrice && <div className={styles.originalPrice}>{apt.originalPrice}</div>}
+                                            <div className={styles.price}>{apt.price || '45€'}</div>
                                         </div>
                                     </div>
                                 ))}

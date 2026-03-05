@@ -239,7 +239,7 @@
     font-weight: 700;
     color: #D32F2F;
     text-decoration: line-through;
-    margin-top: -8px;
+    text-align: right;
 }
 
 .price {
@@ -247,6 +247,7 @@
     font-weight: 700;
     color: #444;
     text-align: right;
+    margin-top: -4px;
 }
 
 /* ── Footer / QR section ──────────────────────────────────── */
