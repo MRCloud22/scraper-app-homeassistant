@@ -73,11 +73,13 @@
     font-weight: inherit;
     color: #D32F2F;
     text-decoration: line-through;
+    margin-top: -2px;
+    font-variant-numeric: tabular-nums;
 }
 
 .price {
     text-align: right;
-    margin-top: -2px;
+    font-variant-numeric: tabular-nums;
 }
 
 .action {

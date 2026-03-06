@@ -240,6 +240,8 @@
     color: #D32F2F;
     text-decoration: line-through;
     text-align: right;
+    margin-top: -4px;
+    font-variant-numeric: tabular-nums;
 }
 
 .price {
@@ -247,7 +249,7 @@
     font-weight: 700;
     color: #444;
     text-align: right;
-    margin-top: -4px;
+    font-variant-numeric: tabular-nums;
 }
 
 /* ── Footer / QR section ──────────────────────────────────── */
