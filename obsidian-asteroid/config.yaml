@@ -1,6 +1,6 @@
-name: "Obsidian Asteroid Scraper"
-description: "A Next.js application that scrapes appointments using Puppeteer."
-version: "0.4.68"
+name: "Termine Scraper Beautykuppel"
+description: "application that scrapes appointments for Beautykuppel."
+version: "1.0.0"
 slug: "obsidian_asteroid"
 url: "https://github.com/MRCloud22/scraper-app-homeassistant"
 init: false
