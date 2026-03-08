@@ -96,6 +96,45 @@ function buildCircleStyle(
     return style;
 }
 
+function Clock({ config }: { config?: ElementConfig & { show?: boolean, color?: string } }) {
+    const [currentTime, setCurrentTime] = useState<Date | null>(null);
+
+    useEffect(() => {
+        setCurrentTime(new Date());
+        const timer = setInterval(() => {
+            setCurrentTime(new Date());
+        }, 1000);
+        return () => clearInterval(timer);
+    }, []);
+
+    if (config?.show === false || !currentTime) return null;
+
+    const s: React.CSSProperties = {
+        position: 'absolute',
+        zIndex: 20,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'flex-end',
+        fontSize: config?.size ? `${config.size}px` : '48px',
+        top: (config?.top ?? config?.right ?? config?.bottom ?? config?.left) === undefined ? 40 : config?.top,
+        right: (config?.top ?? config?.right ?? config?.bottom ?? config?.left) === undefined ? 60 : config?.right,
+        bottom: config?.bottom,
+        left: config?.left,
+        color: config?.color || '#5E7367',
+    };
+
+    return (
+        <div className={styles.timeDisplayWrapper} style={s}>
+            <div className={styles.timeDisplay}>
+                {currentTime.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })} Uhr
+            </div>
+            <div className={styles.timeDate}>
+                {currentTime.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' })}
+            </div>
+        </div>
+    );
+}
+
 
 
 export default function Signage2Page() {
@@ -108,21 +147,11 @@ export default function Signage2Page() {
     const [isStaticMode, setIsStaticMode] = useState(false);
     const [settingsLoaded, setSettingsLoaded] = useState(false);
     const [lastUpdated, setLastUpdated] = useState<string | null>(null);
-    const [currentTime, setCurrentTime] = useState<Date | null>(null);
     const [showPromo, setShowPromo] = useState(false);
     const VISIBLE_COUNT = 5;
 
     const wrapperRef = useRef<HTMLDivElement>(null);
     const scaleRef = useRef<HTMLDivElement>(null);
-
-    // --- Current Time Logic ---
-    useEffect(() => {
-        setCurrentTime(new Date());
-        const timer = setInterval(() => {
-            setCurrentTime(new Date());
-        }, 1000);
-        return () => clearInterval(timer);
-    }, []);
 
     // --- Uniform scale logic ---------------------------------------------------
     useEffect(() => {
@@ -323,37 +352,7 @@ export default function Signage2Page() {
                     style={{ backgroundImage: bgUrl, backgroundSize: 'cover', backgroundColor: customSettings.backgroundColor || undefined }}
                 >
                     {/* Time Layer */}
-                    {customSettings.timeConfig?.show !== false && currentTime && (
-                        <div
-                            className={styles.timeDisplayWrapper}
-                            style={(() => {
-                                const tc = customSettings.timeConfig;
-                                const s: React.CSSProperties = {
-                                    position: 'absolute',
-                                    zIndex: 20,
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'flex-end',
-                                    // font-size lives here so child em-values are relative to the clock size
-                                    fontSize: tc?.size ? `${tc.size}px` : '48px',
-                                    // default position if fully undefined
-                                    top: (tc?.top ?? tc?.right ?? tc?.bottom ?? tc?.left) === undefined ? 40 : tc?.top,
-                                    right: (tc?.top ?? tc?.right ?? tc?.bottom ?? tc?.left) === undefined ? 60 : tc?.right,
-                                    bottom: tc?.bottom,
-                                    left: tc?.left,
-                                    color: tc?.color || '#5E7367',
-                                };
-                                return s;
-                            })()}
-                        >
-                            <div className={styles.timeDisplay}>
-                                {currentTime.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })} Uhr
-                            </div>
-                            <div className={styles.timeDate}>
-                                {currentTime.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' })}
-                            </div>
-                        </div>
-                    )}
+                    <Clock config={customSettings.timeConfig} />
 
                     {/* Background Decorations */}
                     <div className={styles.backgroundDecor} style={decor1Style} />
